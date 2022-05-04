@@ -67,7 +67,7 @@ Recursively search the `input` directory and its subdirectories for files whose 
 ```{r directorySearch}
 list_files <- function(x) {
   dir(
-  path = 'input_fig1_I_K/',
+  path = 'ObjectLevelData',
   pattern = x,
   full.names = TRUE,
   recursive = TRUE,

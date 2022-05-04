@@ -107,7 +107,7 @@ list containing all the filenames on a per cell-level.
 ``` r
 list_files <- function(x) {
   dir(
-  path = 'input_fig1_I_K/',
+  path = 'ObjectLevelData',
   pattern = x,
   full.names = TRUE,
   recursive = TRUE,
