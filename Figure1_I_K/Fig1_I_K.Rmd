@@ -18,6 +18,7 @@ library(ggthemes)
 library(ineq)
 library(ggridges)
 library(scales)
+library(curl)
 ```
 
 Set output folder
@@ -45,6 +46,17 @@ dt_md[, `:=`(probe = factor(probe, levels = c("FGFR2-IIIb",
                                               "None")))]
 ```
 
+### Download the data if needed
+
+Download unzip the Columbus results of the experiments from Figshare if they have not been already downoloaded.
+
+```{r downlaod-data}
+if(!dir.exists("ObjectLevelData")) {
+  URL <- "https://figshare.com/ndownloader/files/35008429"
+  curl_download(URL, "input.zip")
+  unzip("input.zip")
+}
+```
 
 ### Read and process the cell level data
 
