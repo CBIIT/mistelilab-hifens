@@ -1,13 +1,14 @@
 ---
-title: "Fig. 1 I-K"
-author: "Asaf Shilo"
-date: "March 16th 2022"
-output: html_document
+title: "Figures 1I, 1J and 1K"
+author: "Asaf Shilo/Gianluca Pegoraro"
+date: "May 4th 2022"
+output: github_document
 ---
 
 ### Read and Process the Object Level Data
 
 Load required packages.
+
 ```{r loadAndClean}
 library(plyr)
 library(tidyverse)
@@ -20,19 +21,22 @@ library(scales)
 ```
 
 Set output folder
+
 ```{r, include=FALSE, warning=FALSE}
 knitr::opts_chunk$set(
-  fig.path = 'R_Output_Fig1_Histogram/',
-  dev = c("tiff", "pdf", "tiff"),
+  fig.path = 'output/',
   message = FALSE,
   warning = FALSE
   )
 ```
 
 
-Read and Change variable types in experimental metadata data.table
+### Read the experimental metadata
+
+Read and change variable types in experimental metadata data.table
+
 ```{r readMetadata}
-dt_md <- fread("ExperimentalMetaData/GlobalLayout.txt")
+dt_md <- fread("metadata/layout.txt")
 dt_md <- dt_md[probe != "",]
 dt_md[, `:=`(probe = factor(probe, levels = c("FGFR2-IIIb", 
                                               "FGFR2-IIIc",
@@ -41,24 +45,29 @@ dt_md[, `:=`(probe = factor(probe, levels = c("FGFR2-IIIb",
                                               "None")))]
 ```
 
+
+### Read and process the cell level data
+
 Set RegEx patterns for directory searches for cell level data.
+
 ```{r regexFilename}
 pat_c <- ".*Nuclei Final\\[0\\]\\.txt$" # Pattern for Single Cell data files
 ```
 
 Create a list of the RegEx patterns set in the previous chunk. **Important:** the list names will be carried over all the next steps!!!
 
-* c = cell level data
+-   c = cell level data
 
 ```{r patList}
 pat_list <- list(c= pat_c)
 ```
 
-Recursively search the `ObjectLevelData` directory and its subdirectories for files whose name includes the RegEx patterns defined two chunks above. The `path_list` functon outputs absolute file names. `path_list` is a list containing all the filenames on a per cell-level.
+Recursively search the `input` directory and its subdirectories for files whose name includes the RegEx patterns defined two chunks above. The `path_list` functon outputs absolute file names. `path_list` is a list containing all the filenames on a per cell-level.
+
 ```{r directorySearch}
 list_files <- function(x) {
   dir(
-  path = 'ObjectLevelData/',
+  path = 'input/',
   pattern = x,
   full.names = TRUE,
   recursive = TRUE,
@@ -69,7 +78,8 @@ list_files <- function(x) {
 path_list <- llply(pat_list, list_files) 
 ```
 
-Extract file names from absolut path and set them as list element names. 
+Extract file names from the absolute path and set them as list element names.
+
 ```{r trimNames}
 trim_names <- function(x) {
   names(x) <-
@@ -81,6 +91,7 @@ path_list <- llply(path_list, trim_names)
 ```
 
 Recursively read and merge object level data files as data.frames. Rows are labeled with relative filenames (The `.id` variable). This and the previous chunks are slightly modified tricks adopted from H. Wickam ["Tidy Data" paper](http://vita.had.co.nz/papers/tidy-data.pdf).
+
 ```{r readMerge}
 read_merge <- function(x) {
   dt <- as.data.table(ldply(x, fread, sep = "\t", na.strings = NULL))
@@ -89,14 +100,16 @@ read_merge <- function(x) {
 dt_list <- llply(path_list, read_merge)
 ```
 
-Separate the cell level data 
+Separate the cell level data
+
 ```{r deleteDtList}
 dt_cell <- dt_list$c
 
 rm(dt_list)
 ```
 
-Change attribute names 
+Change attribute names
+
 ```{r changeNames}
 setnames(
   dt_cell,
@@ -124,6 +137,7 @@ setnames(
 ```
 
 Join measurementa data with experimental metadata.
+
 ```{r}
 setkey(dt_md, row, column)
 setkey(dt_cell, row, column)
@@ -131,17 +145,19 @@ setkey(dt_cell, row, column)
 dt_full <- dt_cell[dt_md, nomatch = 0] 
 ```
 
-
 Creating probes datasets
+
 ```{r, echo = F}
 FGFR2_Full_dt <- filter (dt_full, probe == "FGFR2-Full")
 FGFR2_IIIB_dt <- filter (dt_full,probe=="FGFR2-IIIb")
 FGFR2_IIIC_dt <- filter (dt_full,probe=="FGFR2-IIIc")
 ```
 
+### Plotting
 
-Histogram Plot For FGFR2_Full Only Probes 
-```{r, fig1.Full, fig.width=8,fig.height=11.5}
+Histogram Plot For FGFR2_Full Only Probes
+
+```{r Fig1_I, fig.width=8,fig.height=11.5, echo=FALSE}
 spot_FGFR2_Full_histo <- ggplot(FGFR2_Full_dt, aes(x = spot_647_n)) 
 
 spot_FGFR2_Full_histo + geom_histogram(aes(y=..density..), binwidth = 1, colour="black", fill ="#FF0000", boundary = 0)+
@@ -166,9 +182,9 @@ spot_FGFR2_Full_histo + geom_histogram(aes(y=..density..), binwidth = 1, colour=
   
 ```
 
+Histogram Plot For FGFR2_IIIb Only Probes
 
-Histogram Plot For FGFR2_IIIb Only Probes 
-```{r, fig1.IIIb, fig.width=8,fig.height=11.5}
+```{r Fig1_J, fig.width=8,fig.height=11.5, echo = FALSE}
 spot_FGFR2_IIIb_histo <- ggplot(FGFR2_IIIB_dt, aes(x = spot_488_n)) 
 
 spot_FGFR2_IIIb_histo + geom_histogram(aes(y=..density..), binwidth = 1, colour="black", fill ="#008300", boundary = 0)+
@@ -193,8 +209,9 @@ spot_FGFR2_IIIb_histo + geom_histogram(aes(y=..density..), binwidth = 1, colour=
   
 ```
 
-Histogram Plot For FGFR2_IIIc Only Probes 
-```{r, fig1.IIIc, fig.width=8,fig.height=11.5}
+Histogram Plot For FGFR2_IIIc Only Probes
+
+```{r Fig1_K, fig.width=8,fig.height=11.5, echo=FALSE}
 spot_FGFR2_IIIb_histo <- ggplot(FGFR2_IIIC_dt, aes(x = spot_488_n)) 
 
 spot_FGFR2_IIIb_histo + geom_histogram(aes(y=..density..), binwidth = 1, colour="black", fill ="#0000C8", boundary = 0)+
@@ -219,6 +236,8 @@ spot_FGFR2_IIIb_histo + geom_histogram(aes(y=..density..), binwidth = 1, colour=
   
 ```
 
-Document the information about the analysis session
-```{r sessionInfo, include=TRUE, echo=TRUE, results='markup'}
+Document the information about the analysis session 
+
+```{r sessionInfo, include=TRUE, echo=TRUE, results="markup"}
 sessionInfo()
+```
