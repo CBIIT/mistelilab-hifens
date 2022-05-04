@@ -52,7 +52,7 @@ Download unzip the Columbus results of the experiments from Figshare if they hav
 
 ```{r downlaod-data}
 if(!dir.exists("ObjectLevelData")) {
-  URL <- "https://figshare.com/ndownloader/files/35008429"
+  URL <- "https://figshare.com/ndownloader/files/35008429?private_link=ac2ed08b395c13865fef"
   curl_download(URL, "input.zip")
   unzip("input.zip")
 }
