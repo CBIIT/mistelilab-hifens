@@ -79,7 +79,7 @@ library(curl)
     ## 
     ##     parse_date
 
-Set output folder
+Set output folder.
 
 ### Read the experimental metadata
 
@@ -98,7 +98,7 @@ dt_md[, `:=`(probe = factor(probe, levels = c("FGFR2-IIIb",
 ### Download the data if needed
 
 Download unzip the Columbus results of the experiments from Figshare if
-they have not been already downoloaded.
+they have not been already downloaded.
 
 ``` r
 if(!dir.exists("ObjectLevelData")) {
@@ -125,10 +125,10 @@ Create a list of the RegEx patterns set in the previous chunk.
 pat_list <- list(c= pat_c)
 ```
 
-Recursively search the `input` directory and its subdirectories for
-files whose name includes the RegEx patterns defined two chunks above.
-The `path_list` functon outputs absolute file names. `path_list` is a
-list containing all the filenames on a per cell-level.
+Recursively search the `ObjectLevelData` directory and its
+sub-directories for files whose name includes the RegEx patterns defined
+two chunks above. The `path_list` function outputs absolute file names.
+`path_list` is a list containing all the filen ames on a per cell-level.
 
 ``` r
 list_files <- function(x) {
@@ -170,7 +170,7 @@ read_merge <- function(x) {
 dt_list <- llply(path_list, read_merge)
 ```
 
-Separate the cell level data
+Separate the cell level data.
 
 ``` r
 dt_cell <- dt_list$c
@@ -178,7 +178,7 @@ dt_cell <- dt_list$c
 rm(dt_list)
 ```
 
-Change attribute names
+Change attribute names.
 
 ``` r
 setnames(
@@ -215,23 +215,23 @@ setkey(dt_cell, row, column)
 dt_full <- dt_cell[dt_md, nomatch = 0] 
 ```
 
-Creating probes datasets
+Creating probes datasets.
 
 ### Plotting
 
-Histogram Plot For FGFR2_Full Only Probes
+Histogram Plot For FGFR2_Full Only Probes.
 
 ![](output/Fig1_I-1.png)<!-- -->
 
-Histogram Plot For FGFR2_IIIb Only Probes
+Histogram Plot For FGFR2_IIIb Only Probes.
 
 ![](output/Fig1_J-1.png)<!-- -->
 
-Histogram Plot For FGFR2_IIIc Only Probes
+Histogram Plot For FGFR2_IIIc Only Probes.
 
 ![](output/Fig1_K-1.png)<!-- -->
 
-Document the information about the analysis session
+Document the information about the analysis session.
 
 ``` r
 sessionInfo()
