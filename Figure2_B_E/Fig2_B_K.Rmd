@@ -1,7 +1,7 @@
 ---
-title: "Figures 2B, and 2E"
+title: "Figures 2B, 2C, 2D and 2E"
 author: "Asaf Shilo/Gianluca Pegoraro"
-date: "May 5th 2022"
+date: "May 6th 2022"
 output: github_document
 ---
 
@@ -20,6 +20,7 @@ library(ggridges)
 library(viridis)
 library(readr)
 library(cowplot)
+library(curl)
 ```
 
 Set output folder.
@@ -79,7 +80,7 @@ Download unzip the Columbus results of the experiments from Figshare if they hav
 
 ```{r downlaod-data}
 if(!dir.exists("ObjectLevelData")) {
-  URL <- ""
+  URL <- "https://figshare.com/ndownloader/files/35014408"
   curl_download(URL, "input.zip")
   unzip("input.zip")
 }
