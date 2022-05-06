@@ -1,7 +1,7 @@
 Figures 1I, 1J and 1K
 ================
 Asaf Shilo/Gianluca Pegoraro
-May 4th 2022
+May 6th 2022
 
 ### Analysis setup
 
@@ -102,7 +102,7 @@ they have not been already downloaded.
 
 ``` r
 if(!dir.exists("ObjectLevelData")) {
-  URL <- "https://figshare.com/ndownloader/files/35008429?private_link=ac2ed08b395c13865fef"
+  URL <- "https://figshare.com/ndownloader/files/35008429"
   curl_download(URL, "input.zip")
   unzip("input.zip")
 }

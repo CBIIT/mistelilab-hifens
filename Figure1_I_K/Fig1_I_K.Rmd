@@ -1,7 +1,7 @@
 ---
 title: "Figures 1I, 1J and 1K"
 author: "Asaf Shilo/Gianluca Pegoraro"
-date: "May 4th 2022"
+date: "May 6th 2022"
 output: github_document
 ---
 
@@ -51,7 +51,7 @@ Download unzip the Columbus results of the experiments from Figshare if they hav
 
 ```{r downlaod-data}
 if(!dir.exists("ObjectLevelData")) {
-  URL <- "https://figshare.com/ndownloader/files/35008429?private_link=ac2ed08b395c13865fef"
+  URL <- "https://figshare.com/ndownloader/files/35008429"
   curl_download(URL, "input.zip")
   unzip("input.zip")
 }
