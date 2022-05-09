@@ -60,6 +60,19 @@ library(ggpubr)
     ## 
     ##     mutate
 
+``` r
+library(curl)
+```
+
+    ## Using libcurl 7.79.1 with LibreSSL/3.3.5
+
+    ## 
+    ## Attaching package: 'curl'
+
+    ## The following object is masked from 'package:readr':
+    ## 
+    ##     parse_date
+
 Set output folder.
 
 Set the palette and the running theme for ggplot2.
@@ -96,7 +109,7 @@ they have not been already downloaded.
 
 ``` r
 if(!dir.exists("ObjectLevelData")) {
-  URL <- ""
+  URL <- "https://figshare.com/ndownloader/files/35014492"
   curl_download(URL, "input.zip")
   unzip("input.zip")
 }
@@ -251,10 +264,10 @@ sessionInfo()
     ## [1] stats     graphics  grDevices utils     datasets  methods   base     
     ## 
     ## other attached packages:
-    ##  [1] ggpubr_0.4.0      ggthemes_4.2.4    data.table_1.14.2 forcats_0.5.1    
-    ##  [5] stringr_1.4.0     dplyr_1.0.9       purrr_0.3.4       readr_2.1.2      
-    ##  [9] tidyr_1.2.0       tibble_3.1.7      ggplot2_3.3.6     tidyverse_1.3.1  
-    ## [13] plyr_1.8.7       
+    ##  [1] curl_4.3.2        ggpubr_0.4.0      ggthemes_4.2.4    data.table_1.14.2
+    ##  [5] forcats_0.5.1     stringr_1.4.0     dplyr_1.0.9       purrr_0.3.4      
+    ##  [9] readr_2.1.2       tidyr_1.2.0       tibble_3.1.7      ggplot2_3.3.6    
+    ## [13] tidyverse_1.3.1   plyr_1.8.7       
     ## 
     ## loaded via a namespace (and not attached):
     ##  [1] Rcpp_1.0.8.3     lubridate_1.8.0  assertthat_0.2.1 digest_0.6.29   

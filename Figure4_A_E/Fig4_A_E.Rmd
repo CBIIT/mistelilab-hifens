@@ -16,6 +16,7 @@ library(data.table)
 library(stringr)
 library(ggthemes)
 library(ggpubr)
+library(curl)
 ```
 
 ```{r, include=FALSE, warning=FALSE}
@@ -45,7 +46,7 @@ Download unzip the Columbus results of the experiments from Figshare if they hav
 
 ```{r downlaod-data}
 if(!dir.exists("ObjectLevelData")) {
-  URL <- ""
+  URL <- "https://figshare.com/ndownloader/files/35014492"
   curl_download(URL, "input.zip")
   unzip("input.zip")
 }
