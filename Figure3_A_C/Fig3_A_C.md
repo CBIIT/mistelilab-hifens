@@ -1,4 +1,4 @@
-Figures 3A, 3B, and 3C
+Figures 3A, 3B, 3C, and 3E
 ================
 Asaf Shilo/Gianluca Pegoraro
 May 9th 2022

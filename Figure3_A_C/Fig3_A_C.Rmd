@@ -1,5 +1,5 @@
 ---
-title: "Figures 3A, 3B, and 3C"
+title: "Figures 3A, 3B, 3C, and 3E"
 author: "Asaf Shilo/Gianluca Pegoraro"
 date: "May 9th 2022"
 output: github_document
