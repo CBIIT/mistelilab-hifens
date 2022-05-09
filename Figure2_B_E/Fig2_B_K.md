@@ -1,7 +1,7 @@
 Figures 2B, 2C, 2D and 2E
 ================
 Asaf Shilo/Gianluca Pegoraro
-May 6th 2022
+May 9th 2022
 
 ### Analysis setup
 
@@ -99,7 +99,7 @@ plot.title = element_text(hjust = 0.5))
 
 ### Read the experimental metadata
 
-Read and change variable types in experimental metadata data.table
+Read and change variable types in experimental metadata data.table.
 
 ``` r
 dt_md <- fread("metadata/layout.txt")
@@ -158,7 +158,7 @@ pat_list <- list(c= pat_c)
 Recursively search the `ObjectLevelData` directory and its
 sub-directories for files whose name includes the RegEx patterns defined
 two chunks above. The `path_list` function outputs absolute file names.
-`path_list` is a list containing all the filen ames on a per cell-level.
+`path_list` is a list containing all the file names on a per cell-level.
 
 ``` r
 list_files <- function(x) {
@@ -174,7 +174,8 @@ list_files <- function(x) {
 path_list <- llply(pat_list, list_files) 
 ```
 
-Extract file names from absolut path and set them as list element names.
+Extract file names from absolute path and set them as list element
+names.
 
 ``` r
 trim_names <- function(x) {
@@ -199,7 +200,7 @@ read_merge <- function(x) {
 dt_list <- llply(path_list, read_merge)
 ```
 
-Separate the cell level data from the distance and spot level data.
+Separate the cell level data.
 
 ``` r
 dt_cell <- dt_list$c
@@ -235,6 +236,8 @@ setkey(dt_cell, row, column)
 
 dt_full <- dt_cell[dt_md, nomatch = 0] 
 ```
+
+Generate datasets for plotting.
 
 ``` r
 dt_T47D <- filter(dt_full,cell_line == "T47D")

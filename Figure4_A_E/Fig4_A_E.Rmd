@@ -1,13 +1,14 @@
 ---
-title: "Fig. 4 no"
-author: "Asaf Shilo"
-date: "March 16th 2022"
-output: html_document
+title: "Figures 4A - 4C"
+author: "Asaf Shilo/Gianluca Pegoraro"
+date: "May 9th 2022"
+output: github_document
 ---
 
-### Read and Process the Object Level Data
+### Analysis setup
 
 Load required packages.
+
 ```{r loadAndClean}
 library(plyr)
 library(tidyverse)
@@ -19,17 +20,16 @@ library(ggpubr)
 
 ```{r, include=FALSE, warning=FALSE}
 knitr::opts_chunk$set(
-  fig.path = 'R_Output_Fig4/',
-  dev = c("png", "tiff", "pdf"),
+  fig.path = 'output/',
   message = FALSE,
   warning = FALSE
   )
 ```
 
+Read and Change variable types in experimental metadata data.table.
 
-Read and Change variable types in experimental metadata data.table
 ```{r readMetadata}
-dt_md <- fread("ExperimentalMetaData/GlobalLayoutplusMCF.txt")
+dt_md <- fread("metadata/layout.txt")
 dt_md <- dt_md[probe != "",]
 dt_md[, `:=`(probe = factor(probe, levels = c("None", 
                                               "FGFR2",
@@ -39,20 +39,36 @@ dt_md[, `:=`(probe = factor(probe, levels = c("None",
                                               "All" )))]
 ```
 
+### Download the data if needed
+
+Download unzip the Columbus results of the experiments from Figshare if they have not been already downloaded.
+
+```{r downlaod-data}
+if(!dir.exists("ObjectLevelData")) {
+  URL <- ""
+  curl_download(URL, "input.zip")
+  unzip("input.zip")
+}
+```
+
+### Read and process the cell level data
+
 Set RegEx patterns for directory searches for cell level data.
+
 ```{r regexFilename}
 pat_c <- ".*Nuclei Final\\[0\\]\\.txt$" # Pattern for Single Cell data files
 ```
 
 Create a list of the RegEx patterns set in the previous chunk. **Important:** the list names will be carried over all the next steps!!!
 
-* c = cell level data
+-   c = cell level data
 
 ```{r patList}
 pat_list <- list(c= pat_c)
 ```
 
-Recursively search the `ObjectLevelData` directory and its subdirectories for files whose name includes the RegEx patterns defined two chunks above. The `path_list` functon outputs absolute file names. `path_list` is a list containing all the filenames on a per cell-level.
+Recursively search the `ObjectLevelData` directory and its sub-directories for files whose name includes the RegEx patterns defined two chunks above. The `path_list` function outputs absolute file names. `path_list` is a list containing all the file names on a per cell-level.
+
 ```{r directorySearch}
 list_files <- function(x) {
   dir(
@@ -67,7 +83,8 @@ list_files <- function(x) {
 path_list <- llply(pat_list, list_files) 
 ```
 
-Extract file names from absolut path and set them as list element names. 
+Extract file names from absolut path and set them as list element names.
+
 ```{r trimNames}
 trim_names <- function(x) {
   names(x) <-
@@ -79,6 +96,7 @@ path_list <- llply(path_list, trim_names)
 ```
 
 Recursively read and merge object level data files as data.frames. Rows are labeled with relative filenames (The `.id` variable). This and the previous chunks are slightly modified tricks adopted from H. Wickam ["Tidy Data" paper](http://vita.had.co.nz/papers/tidy-data.pdf).
+
 ```{r readMerge}
 read_merge <- function(x) {
   dt <- as.data.table(ldply(x, fread, sep = "\t", na.strings = NULL))
@@ -87,14 +105,16 @@ read_merge <- function(x) {
 dt_list <- llply(path_list, read_merge)
 ```
 
-Separate the cell level data from the distance and spot level data.
+Separate the cell level data.
+
 ```{r deleteDtList}
 dt_cell <- dt_list$c
 
 rm(dt_list)
 ```
 
-Change attribute names and create a new `im_acq` variable to indicate 2D or 3D imaging acquisitions.
+Change variables names.
+
 ```{r changeNames}
 setnames(
   dt_cell,
@@ -102,7 +122,6 @@ setnames(
     "Column",
     "ScreenName",
     "WellName",
-    
     "Nuclei Final - Nucleus Roundness",
     "Nuclei Final - Number of Positive 488- per Cell",
     "Nuclei Final - Number of Positive 562- per Cell",
@@ -111,7 +130,6 @@ setnames(
     "column",
     "plate",
     "well",
-   
     "roundness",
     "spot_n_488",
     "spot_n_562",
@@ -119,7 +137,8 @@ setnames(
   )
 ```
 
-Join measurementa data with experimental metadata.
+Join measurement data with experimental metadata.
+
 ```{r}
 setkey(dt_md, row, column)
 setkey(dt_cell, row, column)
@@ -127,54 +146,17 @@ setkey(dt_cell, row, column)
 dt_full <- dt_cell[dt_md, nomatch = 0] 
 ```
 
-create df
+Generate datasets for plotting.
+
 ```{r}
 dt_MP<- filter(dt_full, probe !='FGFR2')
 ```
 
+### Plotting
 
-plots for ALL WITH 488 CHANNEL
-```{r, fig.width=10,fig.height=9}
-spot_488_boxplot <- ggplot(dt_MP, aes(x = probe, y = spot_n_488, fill = cell_line))
+Plotting total FGFR2.
 
-spot_488_boxplot + geom_boxplot() +
-          ylim(0,25)+
-          labs(title = "FGFR2-IIIb", y = "FGFR2-IIIb HCR Spots per cell") +
-                theme_classic()+
-                theme(
-                legend.position =c(0.15, 0.9),
-                legend.title = element_blank(),
-                legend.text = element_text(size=18),
-                plot.title = element_text(size = 24, hjust = 0.5, face = "bold"),
-                axis.title.x = element_blank(),
-                axis.text.x = element_text(angle = 45, hjust = 1),
-                axis.title = element_text(size = 20, color="black", face="bold"),
-                axis.text = element_text(size=20,color="black", face="bold"))
-```
-
-
-plots for ALL WITH 562 CHANNEL
-```{r, fig.width=10,fig.height=9}
-spot_562_boxplot <- ggplot(dt_MP, aes(x = probe, y = spot_n_562, fill = cell_line))
-
-spot_562_boxplot + geom_boxplot() +
-          ylim(0,200)+
-          labs(title = "PGK1" ,y = "PGK1 HCR Spots per cell") +
-                theme_classic()+
-                theme(
-                legend.position =c(0.15, 0.9),
-                legend.title = element_blank(),
-                legend.text = element_text(size=18),
-                plot.title = element_text(size = 24, hjust = 0.5, face = "bold"),
-                axis.title.x = element_blank(),
-                axis.text.x = element_text(angle = 45, hjust = 1),
-                axis.title = element_text(size = 20, color="black", face="bold"),
-                axis.text = element_text(size=20,color="black", face="bold"))
-```
-
-
-plots for ALL WITH 647 CHANNEL
-```{r, fig.width=10,fig.height=9}
+```{r Fig4_A, fig.width=10, fig.height=9, echo=FALSE}
 spot_647_boxplot <- ggplot(dt_MP, aes(x = probe, y = spot_n_647, fill = cell_line))
 
 spot_647_boxplot + geom_boxplot() +
@@ -192,21 +174,59 @@ spot_647_boxplot + geom_boxplot() +
                 axis.text = element_text(size=20,color="black", face="bold"))
 ```
 
+Plotting FGFR2-IIIb.
 
-create df with IIIb OE only
+```{r Fig4_B, fig.width=10, fig.height=9, echo=FALSE}
+spot_488_boxplot <- ggplot(dt_MP, aes(x = probe, y = spot_n_488, fill = cell_line))
+
+spot_488_boxplot + geom_boxplot() +
+          ylim(0,25)+
+          labs(title = "FGFR2-IIIb", y = "FGFR2-IIIb HCR Spots per cell") +
+                theme_classic()+
+                theme(
+                legend.position =c(0.15, 0.9),
+                legend.title = element_blank(),
+                legend.text = element_text(size=18),
+                plot.title = element_text(size = 24, hjust = 0.5, face = "bold"),
+                axis.title.x = element_blank(),
+                axis.text.x = element_text(angle = 45, hjust = 1),
+                axis.title = element_text(size = 20, color="black", face="bold"),
+                axis.text = element_text(size=20,color="black", face="bold"))
+```
+
+Plotting PGK1 in B2-PGK1.
+
+```{r Fig4_C, fig.width=10,fig.height=9, echo=FALSE}
+spot_562_boxplot <- ggplot(dt_MP, aes(x = probe, y = spot_n_562, fill = cell_line))
+
+spot_562_boxplot + geom_boxplot() +
+          ylim(0,200)+
+          labs(title = "PGK1" ,y = "PGK1 HCR Spots per cell") +
+                theme_classic()+
+                theme(
+                legend.position =c(0.15, 0.9),
+                legend.title = element_blank(),
+                legend.text = element_text(size=18),
+                plot.title = element_text(size = 24, hjust = 0.5, face = "bold"),
+                axis.title.x = element_blank(),
+                axis.text.x = element_text(angle = 45, hjust = 1),
+                axis.title = element_text(size = 20, color="black", face="bold"),
+                axis.text = element_text(size=20,color="black", face="bold"))
+```
+
+Create dataset with IIIb only for U2OS cells over-expressing IIIb.
+
 ```{r}
 dt_MP_IIIbOE <- filter(dt_MP, probe == 'All' & cell_line == 'U2OS FGFR2-IIIb')
 ```
 
+Scatter plot of total FGFRII vs. IIIb only for U2OS cells over-expressing IIIb.
 
-```{r, }
+```{r Fig4_E, echo=FALSE}
 spot_FGFR2_scatter <- ggplot(dt_MP_IIIbOE, aes(x = spot_n_647, y = spot_n_488))
 
 spot_FGFR2_scatter + geom_point() +
           geom_smooth(method = lm)+
-          
-          stat_regline_equation(label.x=04, label.y=195, size=5, face = "bold") +
-          stat_cor(label.x=04, label.y=175, size = 5, face = "bold")+
             xlim(0,150)+
             ylim(0,200)+
             labs(x = "FGFR2-D7-10 HCR Spots per Cell ", y = "FGFR2-IIIb HCR Spots per Cell") +
@@ -218,24 +238,9 @@ spot_FGFR2_scatter + geom_point() +
                 axis.text = element_text(size=12,color="black", face="bold"))
 ```
 
-```{r, }
-spot_FGFR2_scatter <- ggplot(dt_MP_IIIbOE, aes(x = spot_n_647, y = spot_n_488))
+Document the information about the analysis session. 
 
-spot_FGFR2_scatter + geom_point() +
-          geom_smooth(method = lm)+
-          
-         
-            xlim(0,150)+
-            ylim(0,200)+
-            labs(x = "FGFR2-D7-10 HCR Spots per Cell ", y = "FGFR2-IIIb HCR Spots per Cell") +
-            theme_classic()+
-                theme(
-                plot.title = element_text(size = 12, hjust = 0.5, face = "bold"),
-                axis.text.x = element_text(angle = 45, hjust = 1),
-                axis.title = element_text(size = 14, color="black", face="bold"),
-                axis.text = element_text(size=12,color="black", face="bold"))
-```
-
-Document the information about the analysis session
-```{r sessionInfo, include=TRUE, echo=TRUE, results='markup'}
+```{r sessionInfo, include=TRUE, echo=TRUE, results="markup"}
 sessionInfo()
+```
+

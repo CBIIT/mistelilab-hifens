@@ -42,7 +42,7 @@ theme_update(plot.title = element_text(hjust = 0.5))
 
 ### Read the experimental metadata
 
-Read and change variable types in experimental metadata data.table
+Read and change variable types in experimental metadata data.table.
 
 ```{r readMetadata}
 dt_md <- fread("metadata/layout.txt")
@@ -83,7 +83,7 @@ Create a list of the RegEx patterns set in the previous chunk. **Important:** th
 pat_list <- list(c= pat_c)
 ```
 
-Recursively search the `ObjectLevelData` directory and its sub-directories for files whose name includes the RegEx patterns defined two chunks above. The `path_list` function outputs absolute file names. `path_list` is a list containing all the filen ames on a per cell-level.
+Recursively search the `ObjectLevelData` directory and its sub-directories for files whose name includes the RegEx patterns defined two chunks above. The `path_list` function outputs absolute file names. `path_list` is a list containing all the file names on a per cell-level.
 
 ```{r directorySearch}
 list_files <- function(x) {
@@ -121,7 +121,7 @@ read_merge <- function(x) {
 dt_list <- llply(path_list, read_merge)
 ```
 
-Separate the cell level data from the distance and spot level data.
+Separate the cell level data.
 
 ```{r deleteDtList}
 dt_cell <- dt_list$c
@@ -175,7 +175,7 @@ dt_MP<- filter(dt_full, probe !='FGFR2')
 
 ### Plotting
 
-Plotting total FGFR2 in B1-FGFR2 System
+Plotting total FGFR2 in B1-FGFR2 System.
 
 ```{r Fig3_A,fig.width=10,fig.height=8, echo=FALSE}
 spot_B1Full_violin <- ggplot(dt_Full, aes(x = cell_line, y = spot_n_488))
@@ -212,7 +212,7 @@ spot_B1IIIb_violin + geom_violin(fill = "green4") + geom_boxplot(outlier.shape =
                 axis.text = element_text(size=20,color="black", face="bold"))
 ```
 
-Plotting PGK1 in B2-PGK1 System
+Plotting PGK1 in B2-PGK1 System.
 
 ```{r Fig3_C,fig.width=10,fig.height=8, echo=FALSE}
 spot_B2PGK1_violin <- ggplot(dt_PGK1, aes(x = cell_line, y = spot_n_562))

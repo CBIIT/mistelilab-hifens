@@ -76,7 +76,7 @@ theme_update(plot.title = element_text(hjust = 0.5))
 
 ### Read the experimental metadata
 
-Read and change variable types in experimental metadata data.table
+Read and change variable types in experimental metadata data.table.
 
 ``` r
 dt_md <- fread("metadata/layout.txt")
@@ -122,7 +122,7 @@ pat_list <- list(c= pat_c)
 Recursively search the `ObjectLevelData` directory and its
 sub-directories for files whose name includes the RegEx patterns defined
 two chunks above. The `path_list` function outputs absolute file names.
-`path_list` is a list containing all the filen ames on a per cell-level.
+`path_list` is a list containing all the file names on a per cell-level.
 
 ``` r
 list_files <- function(x) {
@@ -164,7 +164,7 @@ read_merge <- function(x) {
 dt_list <- llply(path_list, read_merge)
 ```
 
-Separate the cell level data from the distance and spot level data.
+Separate the cell level data.
 
 ``` r
 dt_cell <- dt_list$c
@@ -218,7 +218,7 @@ dt_MP<- filter(dt_full, probe !='FGFR2')
 
 ### Plotting
 
-Plotting total FGFR2 in B1-FGFR2 System
+Plotting total FGFR2 in B1-FGFR2 System.
 
 ![](output/Fig3_A-1.png)<!-- -->
 
@@ -226,7 +226,7 @@ Plotting FGFR2-IIIb in B1-IIIB System
 
 ![](output/Fig3_B-1.png)<!-- -->
 
-Plotting PGK1 in B2-PGK1 System
+Plotting PGK1 in B2-PGK1 System.
 
 ![](output/Fig3_C-1.png)<!-- -->
 
