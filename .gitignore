@@ -5,3 +5,6 @@
 *.DS_Store
 */ObjectLevelData*
 *.zip
+*/Object_Data/*
+*/hts2_input/*
+*/hts2_output/*

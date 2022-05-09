@@ -1,0 +1,182 @@
+---
+title: "FGFR2 HCR siKinome Screen - No4 - Part 3 - Downstream analysis"
+author: "Asaf Shilo"
+date: "February 19 2020"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(fs)
+```
+
+```{r, include=FALSE, warning=FALSE}
+knitr::opts_chunk$set(
+  fig.path = 'Output',
+  cache = FALSE,
+  dev = c("png", "pdf"),
+  message = FALSE,
+  warning = FALSE
+)
+
+theme_set(theme_bw())
+theme_update(
+  axis.text.x = element_text(
+    angle = -90,
+    hjust = 0,
+    vjust = 0.5
+  ),
+  axis.text.y = element_text(hjust = 0.5),
+  plot.title = element_text(hjust = 0.5)
+)
+```
+
+```{r}
+read_hts2_results <- function(path, glob) {
+  dir_ls(path = path,
+         recurse = T,
+         glob = glob) %>%
+    map_df(read_tsv,
+           .id = "file_name")
+}
+```
+
+```{r}
+glob_path <- "*Results_table.txt"
+```
+
+```{r}
+all_tbl <- read_hts2_results("HTS2_Output", glob_path) %>%
+    filter(!(is.na(score) | wellAnno == "pos")) %>%
+    mutate(prop = str_match(file_name, "HTS2_Output/(.*?)/")[,2]) %>%
+    select(plate, 
+           well, 
+           control = wellAnno, 
+           gene_id = GeneID,
+           sirna_id = siRNAID,
+           gene_symbol = GeneSymbol,
+           prop,
+           score,
+           raw_repeat_1=raw_r1_ch1,
+           ratio_repeat_1='raw/PlateMedian_r1_ch1',
+           norm_repeat1=normalized_r1_ch1)       %>%   
+
+    mutate(control = fct_recode(control,
+                                siScramble = "neg",
+                                Library = "sample",
+                                siESRP1 = "control1",
+                                siESRP2 = "control2"),
+           control = fct_relevel(control, c("siScramble", 
+                                            "Library", 
+                                            "siESRP1",
+                                            "siESRP2")))  %>%  
+  pivot_wider(names_from=prop,
+              values_from = c(score,
+                              raw_repeat_1,
+                              ratio_repeat_1,
+                              norm_repeat1))
+```
+
+```{r}
+glimpse(all_tbl)
+```
+
+```{r, echo = F}
+Controls_only_all_tbl <-
+  filter(all_tbl,control=="siESRP1" | control == "siESRP2" | control =="siScramble")%>%
+  select(-starts_with("raw"), -starts_with("ratio"), -starts_with("norm"))
+```
+
+
+```{r, echo = F}
+Library_only_all_tbl <-
+  filter(all_tbl,control=="Library") %>%
+  select(-starts_with("raw"), -starts_with("ratio"), -starts_with("norm"))
+```
+
+```{r, echo = F}
+Library_only_an_Hits_tbl <-Library_only_all_tbl[ , c(1:6,11,16)]
+```
+
+
+```{r, echo = F}
+FGFR2_IIIB_n <- all_tbl %>% ggplot(aes(x = well, 
+                                 y = raw_repeat_1_FGFR2_IIIB_spots_mean, color = as.factor(plate)))
+                                         
+IIIb_n<-FGFR2_IIIB_n + geom_point(size = (1))+
+   scale_color_manual(values=c('#F8766D','#B79F00', '#00BA38', '#00BFC4', '#619CFF', '#F564E3'), name="plate index") +
+  xlab("Well index") +
+  ylab("FGFR2-IIIb HCR spots per cell (average per well)") +
+  theme_classic()+
+                theme(
+                legend.text = element_text(size=8),
+                
+               
+                axis.title.x = element_text(color="black",size = 8),
+                axis.text.x = element_blank(),
+                axis.title.y = element_text(color="black",size = 8),
+                axis.text.y = element_text(color="black",size=8))
+
+IIIb_n
+```
+
+```{r, echo = F}
+ggsave("IIIb_n.pdf", width=11, height = 8)
+```
+
+```{r, echo = F}
+FGFR2_Full_n <- all_tbl %>% ggplot(aes(x = well, 
+                                 y = raw_repeat_1_FGFR2_Full_spots_mean, color = as.factor(plate)))
+                                         
+Full_n<- FGFR2_Full_n + geom_point(size = (1))+
+ scale_color_manual(values=c('#F8766D','#B79F00', '#00BA38', '#00BFC4', '#619CFF', '#F564E3'), name="plate index") +
+  xlab("Well index") +
+  ylab("FGFR2-Full HCR spots per cell (average per well)") +
+  theme_classic()+
+                theme(
+                legend.text = element_text(size=8),
+                
+               
+                axis.title.x = element_text(color="black",size = 8),
+                axis.text.x = element_blank(),
+                axis.title.y = element_text(color="black",size = 8),
+                axis.text.y = element_text(color="black",size=8))
+
+Full_n
+```
+
+```{r, echo = F}
+ggsave("Full_n.pdf", width=11, height = 8)
+```
+
+```{r, echo = F}
+FGFR2_Full_IIIB <-all_tbl %>% ggplot(aes(x = score_FGFR2_IIIB_spots_mean, 
+                                            y = score_FGFR2_Full_spots_mean))
+ 
+                                         
+FGFR_Annot<-FGFR2_Full_IIIB + geom_point(shape = 21, color = "pink", size = 0.2 ) + 
+  coord_equal() +
+  xlab("Mean z-score FGFR IIIB HCR Spots") +
+  ylab("Mean z-score FGFR Full HCR Spots") +
+  ggplot2::annotate("rect", xmin = -5, xmax = -1.5, ymin = -5, ymax = -1.5, alpha = 1, fill = "#E5E5FF", color = "#E5E5FF")+
+    coord_cartesian(ylim = c(-5, 2), xlim = c(-5, 2)) +
+  ggrepel::geom_text_repel(data = all_tbl[all_tbl$gene_symbol == 'FGFR1'  | all_tbl$gene_symbol == 'FGFR2' | all_tbl$gene_symbol == 'FGFR3'  | all_tbl$gene_symbol == 'FGFR4',],
+                           color = "black",  min.segment.length = 0.05, seed = 42, box.padding = 0.7,
+aes(label=gene_symbol))+
+  
+  ggtitle("FGFR Full vs. FGFR IIIB Mean Number of HCR Spots per Cell")
+
+FGFR_Annot
+```
+
+```{r, echo = F}
+ggsave("FGFR_Annot.pdf")
+```
+
+Document the information about the analysis session
+```{r sessionInfo, results='markup'}
+sessionInfo()
+```

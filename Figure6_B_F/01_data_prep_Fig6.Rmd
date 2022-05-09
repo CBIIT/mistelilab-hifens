@@ -1,0 +1,510 @@
+---
+title:  FGFR2 HCR siKinome Screen - No4 - Part 1 - cellHTS2 Data prep
+author: "Asaf Shilo"
+date: "April, 23 2020"
+output: "html_document"
+---
+## README
+This Script is used to generate the data formatted for CellHTS2 analysis.
+
+## Setup
+Load packages.
+```{r}
+library(tidyverse)
+library(readxl)
+library(fs)
+library(ineq)
+```
+
+### User variables input and settings specification
+```{r measSelection}
+METADATA_DIR<- "HTS2_Metadata"
+
+IN_DIR <- "HTS2_Input"
+
+OUT_DIR <- "HTS2_Output"
+
+OBJECT_DIR <- "Object_Data"
+
+ROOT_DIR <- "Reformatting_Metadata"
+
+AMBION_DIR <- file.path(ROOT_DIR, "Ambion_files")
+
+RESUSP_DIR <- file.path(ROOT_DIR, "Resuspension")
+
+COMP_DIR <- file.path(ROOT_DIR, "Compression")
+
+STAMP_DIR <- file.path(ROOT_DIR, "Mother_Plates")
+
+GLOB_PAT <- "*Nuclei Final[0].txt"
+```
+
+We specified the location of the Columbus .txt results file, the original ThermoFisher files containing the identity and position of the siRNA oligos in the 96-well plates (`r OBJECT_DIR`), and of the metadata obtained from the Janus logs (`r file.path(ROOT_DIR, AMBION_DIR)`, `r file.path(ROOT_DIR, RESUSP_DIR)`, `r file.path(ROOT_DIR, COMP_DIR)`, and  `r file.path(ROOT_DIR, STAMP_DIR)` ). 
+
+Generate the `r IN_DIR` directory for the well level Columbus data to be used in the`cellHTS2` analysis. In addition, create an empty template for the `cellHTS2` description file in the `r METADATA_DIR` directory. **This file contains information about the experiment, and it must be filled in in a text editor before continuing with the analysis. Without this file cellHTS2 won't run**. 
+```{r makeDir}
+if(!dir_exists(IN_DIR)){
+dir_create(IN_DIR)
+}
+
+if(!file_exists(file.path(METADATA_DIR,"Description.txt"))) { 
+    templateDescriptionFile(filename = "Description.txt", path = METADATA_DIR)
+}
+```
+
+Set the `knitr` options and the `ggplot2` theme.
+```{r setOptions}
+knitr::opts_chunk$set(
+    cache = FALSE,
+    fig.path = paste0(METADATA_DIR, "/"),
+    dev = c("png", "pdf"),
+    fig.height = 9,
+    fig.width = 12,
+    message = FALSE,
+    warning = FALSE
+    )
+
+theme_set(theme_bw())
+```
+
+## Data and metadata input and wrangling
+Read the siRNA layout information provided by ThermoFisher, rename some variables, eliminate empty rows, and select only relevant columns. 
+```{r readGeneList}
+names_selection <- syms(
+  c(
+    "Lot Number",
+    "ambion_barcode",
+    "Plate Name",
+    "ambion_well",
+    "Row",
+    "Col",
+    "RefSeq Accession Number",
+    "Gene Symbol",
+    "Full Gene Name",
+    "Gene ID",
+    "siRNA ID",
+    "Exon(s) Targeted",
+    "Sense siRNA Sequence",
+    "Antisense siRNA Sequence",
+    "Validated"
+  )
+)
+
+gene_tbl <- dir_ls(path = AMBION_DIR,
+                   glob = "*.xls") %>%
+  map_df(read_excel,
+          .id = "File_name") %>%
+  rename(ambion_well = `Location (Row-Col)`,
+         ambion_barcode = `Plate ID`) %>%
+  filter(!is.na(`Gene ID`)) %>%
+  select(!!!names_selection)
+
+glimpse(gene_tbl)
+```
+
+
+Read the Janus logs for resuspension, compression from 96- to 384-well format into the `mother` plates and stamping into the `daughter` plates (i.e. the Echo LDV-384 plates).
+```{r readJanusLogs}
+read_logs <- function(path,
+                      ext = "*.xlsx",
+                      src_rack,
+                      src_well,
+                      dest_rack,
+                      dest_well) {
+  source_rack_name <- enquo(src_rack)
+  dest_rack_name <- enquo(dest_rack)
+  source_well_name <- enquo(src_well)
+  dest_well_name <- enquo(dest_well)
+  
+  dir_ls(path = path,
+         glob = ext) %>%
+    map_dfr(read_excel,
+            .id = "file_name") %>%
+    select(file_name,
+           SrcRack,
+           SrcWell,
+           Rack,
+           Well,
+           quadrant = Tip,
+           sample_id = SampleId) %>%
+    filter(!(Rack == SrcRack)) %>%
+    mutate(SrcRack = str_remove(SrcRack, "Q1_001")) %>%
+    rename(
+      !!source_rack_name := SrcRack,!!dest_rack_name := Rack,!!source_well_name := SrcWell,!!dest_well_name := Well
+    )
+}
+
+resusp_tbl <- read_logs(
+  path = RESUSP_DIR,
+  src_rack = reservoir_barcode,
+  dest_rack = ambion_barcode,
+  src_well = reservoir_well,
+  dest_well = ambion_well
+)
+
+
+compr_tbl <- read_logs(
+  path = COMP_DIR,
+  src_rack = ambion_barcode,
+  dest_rack = mother_barcode,
+  src_well = ambion_well,
+  dest_well = mother_well
+)
+
+
+stamp_tbl <- read_logs(
+  path = STAMP_DIR,
+  src_rack = mother_barcode,
+  dest_rack = daughter_barcode,
+  src_well = mother_well,
+  dest_well = daughter_well
+)
+```
+
+
+Read the object-level Columbus data from the text files. The object level data must be in the `OBJECT_DIR` and the file names *must match* the `r GLOB_PAT` `glob` pattern. 
+```{r readColumbusData, include=FALSE}
+read_columbus_results <- function(path, pattern) {
+  dir_ls(path = path,
+         recurse = T,
+         glob = pattern) %>%
+    map_df(read_tsv,
+           .id = "file_name") %>%
+   select(plate_index = PlateName,
+          well_index = WellName,
+          row = Row,
+          column = Column,
+          field_index = Field,
+          object_index = `Object Number`,
+          nuc_area = `Nuclei Final - Nucleus Area [µm²]`,
+          nuc_round = `Nuclei Final - Nucleus Roundness`,
+          cell_round = `Nuclei Final - Cell Roundness`,
+          cell_area = `Nuclei Final - Cell Area [µm²]`,
+          spots_488_n = `Nuclei Final - Number of Positive 488- per Cell`,
+          spots_561_n = `Nuclei Final - Number of Positive 562- per Cell`,
+          spots_640_n = `Nuclei Final - Number of Positive 647- per Cell`)
+}
+                  
+  cell_tbl <- read_columbus_results(OBJECT_DIR, GLOB_PAT)
+  
+  glimpse(cell_tbl)
+
+```
+
+
+Calculate the well-level mean statistic for a variety of Columbus measurements. Also calculate the Gini coefficient for `spots_488_n`, `spots_561_n` and `spots_640_n`. Write the cumulative well-level results in the `r IN_DIR` directory.
+```{r calculateWellLevelData}
+well_tbl <- cell_tbl %>% group_by(plate_index, 
+                                  well_index,
+                                  row,
+                                  column) %>%
+        mutate( 
+                  spots_488_ratio = spots_488_n/cell_area,
+                  spots_561_ratio = spots_561_n/cell_area,
+                  spots_640_ratio = spots_640_n/cell_area,) %>%
+                     
+        summarise(cell_n = n(),
+                  nuc_area_mean = mean(nuc_area, na.rm = T),
+                  nuc_round_mean = mean(nuc_round, na.rm = T),
+                  cell_area_mean = mean(cell_area, na.rm = T),
+                  
+                  TBP_spots_mean = mean(spots_561_n, na.rm = T),
+                  TBP_spots_area_mean = mean(spots_561_ratio, na.rm = T),
+                  TBP_ineq = Gini(spots_561_n),
+                  
+                  FGFR2_IIIB_spots_mean = mean(spots_488_n, na.rm = T),
+                  FGFR2_IIIB_spots_area_mean = mean(spots_488_ratio, na.rm = T),
+                  FGFR2_IIIB_ineq = Gini(spots_488_n),
+                  
+                  FGFR2_Full_spots_mean = mean(spots_640_n, na.rm = T),
+                  FGFR2_Full_spots_area_mean = mean(spots_640_ratio, na.rm = T),
+                  FGFR2_Full_ineq = Gini(spots_640_n), 
+                  ) %>% 
+            
+            mutate(
+                    FGFR2_IIIB_spots_Cell_Area_TBP_norm = FGFR2_IIIB_spots_area_mean / TBP_spots_area_mean,
+                    FGFR2_Full_spots_Cell_Area_TBP_norm = FGFR2_Full_spots_area_mean / TBP_spots_area_mean,
+                    FGFR2_IIIB_spots_Cell_Area_and_TBP_norm = FGFR2_IIIB_spots_area_mean / TBP_spots_mean,
+                    FGFR2_Full_spots_Cell_Area_and_TBP_norm = FGFR2_Full_spots_area_mean / TBP_spots_mean, 
+                    FGFR2_IIIB_spots_TBP_norm = FGFR2_IIIB_spots_mean / TBP_spots_mean,
+                    FGFR2_Full_spots_TBP_norm = FGFR2_Full_spots_mean / TBP_spots_mean)%>%  
+            
+            arrange(plate_index, 
+                    well_index,
+                    row,
+                    column) %>%
+            ungroup()
+ 
+
+write_tsv(well_tbl, path = file.path(IN_DIR, "Columbus_object_results.txt"))
+
+glimpse(well_tbl)
+```
+
+reorder the table
+```{r}
+well_tbl <- well_tbl[ ,c(1:14,18,20,22,15:16,19,21,23,17)]
+```
+
+
+Create input and output folder hierarchies in the `r IN_DIR` and `r OUT_DIR` directories, respectively.
+```{r}
+well_tbl %>%
+  select(cell_n:FGFR2_Full_ineq) %>%
+  names() %>% walk(~ dir_create(file.path(IN_DIR, .x)))
+
+well_tbl %>%
+  select(cell_n:FGFR2_Full_ineq) %>%
+  names() %>% walk(~ dir_create(file.path(OUT_DIR, .x)))
+```
+
+Assign a plate number to the Mother plates. For now this is a manual operation. 
+```{r runsNumber}
+run_tbl <- tibble(mother_barcode = c(paste0('HT000', seq(46, 51))),
+                  plate_number = 1:6)
+
+compr_tbl <- left_join(compr_tbl, run_tbl, by = 'mother_barcode')
+```
+
+Join well annotations from the Thernmo FISHER table with the logs obtained from the Janus compression step.
+```{r joinLevel1}
+join1 <- left_join(compr_tbl,
+                   gene_tbl,
+                   by = c("ambion_barcode", "ambion_well")) %>%
+  select(
+    ambion_barcode,
+    ambion_well,
+    plate_number,
+    mother_barcode,
+    mother_well,
+    quadrant,
+    sample_id,
+    refseq_id = `RefSeq Accession Number`,
+    gene_symbol = `Gene Symbol`,
+    gene_name = `Full Gene Name`,
+    gene_id = `Gene ID`,
+    oligo_id = `siRNA ID`,
+    exon = `Exon(s) Targeted`,
+    sense = `Sense siRNA Sequence`,
+    antisense = `Antisense siRNA Sequence`
+  ) %>%
+  mutate(mother_row = str_extract(mother_well, "[A-Z]"),
+         mother_col = as.numeric(str_extract(mother_well, "[0-9]+"))) %>%
+  filter(!(is.na(gene_symbol) | is.na(plate_number)))
+
+glimpse(join1)
+```
+
+
+Join the resulting table (`join1`) with the logs from the stamping plates step (Generation of the diluted daughter plates).
+```{r joinLevel2}
+join2 <-
+  left_join(stamp_tbl, join1, by = c("mother_barcode", "mother_well")) %>%
+  select(
+    ambion_barcode,
+    ambion_well,
+    plate_number,
+    mother_barcode,
+    mother_well,
+    mother_row,
+    mother_col,
+    daughter_barcode,
+    daughter_well,
+    refseq_id ,
+    gene_symbol,
+    gene_name ,
+    gene_id,
+    oligo_id,
+    exon,
+    sense,
+    antisense
+  ) %>%
+  filter(!is.na(refseq_id))
+
+glimpse(join2)
+```
+
+## siRNA oligos layout 
+```{r ambionLayout, echo = FALSE}
+ambion_layout <-
+  ggplot(gene_tbl, aes(x = Col, y = Row))
+
+ambion_layout + geom_point(size = 1.5) +
+  facet_wrap( ~ ambion_barcode, nrow = 4) +
+  scale_x_continuous(breaks = 1:12) +
+  ylim(LETTERS[8:1]) +
+  coord_equal() +
+  xlab("Column") +
+  ylab("Row") +
+  ggtitle("Ambion siKinome Library 96-well Layout")
+```
+
+```{r reformatLayout2, echo = F}
+reformat_layout <- ggplot(join1, aes(x = mother_col,
+                                     y = mother_row,
+                                    color = ambion_barcode))
+
+reformat_layout + geom_point() +
+  facet_wrap(~ plate_number, nrow = 2) +
+  scale_x_continuous(breaks = 1:24) +
+  ylim(LETTERS[16:1]) +
+  coord_equal() +
+  xlab("Column") +
+  ylab("Row") +
+  ggtitle("Ambion siKinome 384-well Reformat Layout")
+```
+
+```{r reformatLayout3, echo = F}
+join1_1p <- filter(join1,plate_number=='1')
+```
+
+```{r reformatLayout4, echo = F}
+reformat_layout <- ggplot(join1_1p, aes(x = mother_col,
+                                     y = mother_row,
+                                    color = ambion_barcode))
+
+reformat_layout + geom_point() +
+  facet_wrap(~ plate_number, nrow = 2) +
+  scale_x_continuous(breaks = 1:24) +
+  ylim(LETTERS[16:1]) +
+  coord_equal() +
+  xlab("Column") +
+  ylab("Row") +
+  ggtitle("Ambion siKinome 384-well Reformat Layout")
+```
+
+
+
+
+
+## `cellHTS2` data wrangling
+### `Annotation`
+Make the annotation file for `cellHTS2`, name it `Annotation.txt` and save it to the in the `r IN_DIR` directory.
+```{r makeAnnotationTable}
+annotation_tbl <- join1 %>%
+  select(
+    Plate = plate_number,
+    Well = mother_well,
+    GeneID = gene_id,
+    GeneSymbol = gene_symbol,
+    siRNAID = oligo_id
+  ) %>%
+  mutate(Well = sprintf("%s%02d",
+                        str_extract(Well, "\\w"),
+                        as.numeric(str_extract(Well, "\\d+")))) %>%
+  arrange(Plate, Well)
+
+glimpse(annotation_tbl)
+
+write_tsv(annotation_tbl,
+          path = file.path(METADATA_DIR, "Annotation.txt"))
+```
+### `Plate Configuration`
+Generate the configuration file `Plateconf.txt` for `cellHTS2` according to the documentation specifications:
+> The software expects this to be a rectangular table in a tabulator delimited text file, with mandatory columns Plate, Well, Content, plus two additional header lines that give the total number of wells and plates (see Table ?? for an example). The content of this file (except the two header lines) are stored in slot plateConf of x.
+As the name suggests, the Content column provides the content of each well in the plate (here referred to as the well annotation). Mainly, this annotation falls into four categories: empty wells, wells targeting genes of interest, control wells, and wells containing other things that do not fit in the previous categories. The first two types of wells should be indicated in the Content column of the plate configuration file by empty and sample, respectively, while the last type of wells should be indicated by other. The designation for the control wells in the Content column is more flexible. By default, the software expects them to be indicated by pos (for positive controls), or neg (for negative controls). However, other names are allowed, given that they are specified by the user whenever necessary (for example, when calling the writeReport function). This versatility for the control wells’ annotation is justified by the fact that, sometimes, multiple positive and/or negative controls can be employed in a given screen, making it useful to give different names to the distinct controls in the Content column. More- over, this versatility might be required in multi-channel screens for which we frequently have reporter-specific controls.
+The Well column contains the name of each well of the plate in alphanu- meric format (in this case, A01 to P24), while column Plate gives the plate number (1, 2, ...). These two columns are also allowed to contain regular expressions. In the plate configuration file, each well and plate should be covered by a rule, and in case of multiple definitions only the last one is considered. For example, in the file shown in Table ??, the rule specified by the first line after the column header indicates that all of the wells in each of the 57 assay plate contain “sample”. However, a following rule indicate that the content of wells A01, A02 and B01 and B02 differ from “sample”, containing other material (in this case, “other” and controls).
+Note that the well annotations mentioned above are used by the software in the normalization, quality control, and gene selection calculations. Data from wells that are annotated as empty are ignored, i. e. they are set to NA.
+
+The configuration file tells `cellHTS2` where the samples, controls and empty wells are on each plate. The first 8 lines of the file (Headers and controls positions) are hardcoded for now. The samples layout are is appended from the processed information obtained from the Janus logs.
+```{r makeConfigurationTable1}
+line1 <- "Wells: 384"
+line2 <- "Plates: 6"
+line3 <- "Plate\tWell\tContent"
+line4 <- "*\t*\tempty"
+
+odd_rows <- paste(LETTERS[seq(1, 16, by = 2)], collapse = ",")
+even_rows <- paste(LETTERS[seq(2, 16, by = 2)], collapse = ",")
+
+line5 <-
+  paste0("*\t[", odd_rows, "]23\tneg") # sinon-targetting in Column 23 odd rows (A, C, ..., O)
+line6 <-
+  paste0("*\t[", even_rows, "]23\tpos") # allSTAR killer in Column 23 even rows (B, D, ..., P)
+line7 <-
+  paste0("*\t[", odd_rows, "]24\tcontrol1")  #  siESRP1 in Column 24 odd rows (A, C, ..., O)
+line8 <-
+  paste0("*\t[", even_rows, "]24\tcontrol2") # siESRP2 in Column 24 even rows (B, D, ..., P)
+
+header <-  c(line1, line2, line3, line4, line5, line6, line7, line8)
+
+header
+
+# Write header to file
+conf <- file(file.path(METADATA_DIR, "Plateconf.txt"), "w")
+writeLines(header, conf)
+close(conf)
+```
+The samples layout is appended from the processed information obtained from the Janus logs and is written out to the the `r METADATA_DIR` directory.
+```{r makeConfigurationTable2}
+config_tbl <- annotation_tbl %>%
+  select(Plate, Well) %>%
+  mutate(Content = "sample")
+
+glimpse(config_tbl)
+
+write_tsv(config_tbl,
+          path = file.path(METADATA_DIR, "Plateconf.txt"),
+          append = T) # append 
+```
+### `Measurements`
+Generate a `Master_Barcode_List.txt` file and save it in the working directory (i.e. the same directory where the .Rmd file is). According to the `cellHTS2` specifications, the file should have these columns: `PlateName` (The plate barcode, as determined in the Janus log files, a string), `Plate` (The plate number in the library, a number), `Replicate` (Self explanatory, a number) and `Batch` (if the experiment or replicate was run in different batches, not necessary). This file contains the information on which plates have been analyzed, and on what the internal organization of the run is.
+The `Master_Barcode_List.txt` file is used to generate the measurement files to be read by `cellHTS2`.
+```{r readMasterBarcodeList}
+barcodes_tbl <- read_tsv(file.path(METADATA_DIR, "Master_Barcode_List.txt"))
+
+glimpse(barcodes_tbl)
+```
+### `Plate List`
+Generate and writeout the `cellHTS2` Platelist.txt file in the `r IN_DIR` directory. 
+```{r makePlatelist}
+well_tbl %>%
+  left_join(barcodes_tbl, by = c("plate_index" = "PlateName")) %>%
+  pivot_longer(cols = cell_n:FGFR2_Full_ineq,
+               names_to = "measurement",
+               values_to = "value") %>%
+  group_by(Plate, Replicate, Batch, measurement, plate_index) %>%
+  group_keys() %>%
+  mutate(Filename = paste0(plate_index, "_cellHTS2.txt")) %>%
+  group_by(measurement) %>%
+  group_walk(~ write_tsv(
+    select(.x, Filename, Plate, Replicate, Batch),
+    file.path(IN_DIR,
+              .y$measurement,
+              "Platelist.txt")
+  ))
+
+dir_info(path = IN_DIR,
+         glob = "*.txt",
+         recurse = T) %>% select(1:2)
+```
+Reformat the well names according to cellHTS2 specifications and  write out one `cellHTS2` measurement files on a per measurement, per plate basis in the `r IN_DIR` directory.
+```{r formatWellsHTS2Format}
+meas_tbl <- 
+  left_join(well_tbl, barcodes_tbl, by = c("plate_index" = "PlateName")) %>%
+  
+  mutate(well_index = sprintf("%s%02d",
+                              str_extract(well_index, "\\w"),
+                              as.numeric(str_extract(well_index, "\\d+"))))
+
+meas_tbl %>% pivot_longer(cols = cell_n:FGFR2_Full_ineq,
+                          values_to =  "Value",
+                          names_to = "measurement") %>%
+             group_by(measurement, plate_index) %>%
+             group_walk( ~ write_tsv(
+                select(.x, Plate, WellName = well_index, Value),
+                file.path(IN_DIR,
+                          .y$measurement,
+                          paste0(.y$plate_index,
+                                 "_cellHTS2.txt")),
+                col_names = F,
+                na = "NaN"
+              ))
+
+dir_info(path = IN_DIR,
+         glob = "*_cellHTS2.txt",
+         recurse = T) %>% select(1:2)
+```
+Document the information about the analysis session
+```{r sessionInfo, results='markup'}
+sessionInfo()
+```

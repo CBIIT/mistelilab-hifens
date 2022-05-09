@@ -1,0 +1,65 @@
+190725 Laurent Ozbun
+### Resuspension: 
+- Thaw plates
+- Centrifuge plates 2000 rpm @ RT for 2 min
+- Unseal plates -
+- Dispense 50 ul of water into the 96-well plates provided by Ambion (Final conc: 5 uM)
+- pipette up and down 5 times. 
+- Reseal with Aluma Seal
+- Freeze at -80C
+
+Issues:
+
+- All Thermo plates have the barcode reader on the East side. The PlateStack barcode reader can read only barcodes on the right side.
+
+- In order for the Platestack barcode reader to work, all plates were flipped 180 degrees (A1 -> H12). 
+
+- CPF208TB to CPF208TK was resuspended in the first batch.
+
+- CPF208TL to CPF208TY were resuspended in the second batch.
+
+- CPF208TZ to CPF208U1 were resuspended in the third batch.
+
+
+ 
+190729 Laurent Ozbun
+ ### Compression (into MASTER STORAGE PLATE)
+ - Thawed plates
+ - Centrifuge plates 2000 rpm @ RT for 2 min
+ - Remove seal under hood
+ - Transfer 45 ul from 4 96- to 1 384-wells by compressing into 4 quadrants
+ 
+ 7 compression batches
+- HT00046---> CPF208TB, CPF208TC, CPF208TD, CPF208TE
+- HT00047---> CPF208TF, CPF208TG, CPF208TH, CPF208TI
+- HT00048---> CPF208TK, CPF208TL, CPF208TM, CPF208TN
+- HT00049---> CPF208TO, CPF208TP, CPF208TQ, CPF208TR
+- HT00050---> CPF208TT, CPF208TU, CPF208TV, CPF208TW
+- HT00051---> CPF208TX, CPF208TY, CPF208TZ, CPF208U0
+- HT00052---> CPF208TJ, CPF208TS, CPF208U1
+ 
+ Issues:
+ 
+ - Ambion plates tend to stick to the tips when the MDT head moves up.
+ - Plate 7 (Compression) was from three 96-wp that EACH had 5 siRNA.  The Varispan was used to compress 15 siRNA into column 22 of the 384 well storage plate.
+
+190730 Laurent Ozbun
+###Make 3 Mother ECHO LDV plates from Master Storage Plate
+
+- HT00046---> HT000415, HT000416, HT000417
+- HT00047---> HT000418, HT000419, HT000420
+- HT00048---> HT000421, HT000422, HT000423
+- HT00049---> HT000424, HT000425, HT000426
+- HT00050---> HT000427, HT000428, HT000429
+- HT00051---> HT000430, HT000431, HT000432
+- HT00052---> HT000433, HT000434, HT000435
+
+190802 Laurent Ozbun
+### Spot 3 replica plates for Asaf.  Used LDV mother plates to spot 150 nl onto PE cell carrier image plates
+-HT000415--->HT000619, HT000620
+-HT000418--->HT000621, HT000622
+-HT000421--->HT000623, HT000624
+-HT000424--->HT000625, HT000626
+-HT000427--->HT000627, HT000628
+-HT000430--->HT000629, HT000630
+-HT000433--->HT000631, HT000632
