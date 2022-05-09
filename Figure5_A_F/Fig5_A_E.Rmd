@@ -1,0 +1,282 @@
+---
+title: "HCR E58 siESRP RNA HCR"
+author: "Asaf Shilo"
+date: "Jan 23rd 2020"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+### Read and Process the Object Level Data
+
+Load required packages.
+```{r loadAndClean}
+library(plyr)
+library(tidyverse)
+library(data.table)
+library(stringr)
+library(ggthemes)
+library(hexbin)
+library(ggpubr)
+library(viridis)
+library(RColorBrewer)
+library(tinytex)
+
+```
+
+
+```{r, include=FALSE, warning=FALSE}
+knitr::opts_chunk$set(
+  fig.path = 'R_Output_Fig5/',
+  dev = c("png", "tiff"),
+  message = FALSE,
+  warning = FALSE
+  )
+```
+
+Set the palette and the running theme for ggplot2.
+```{r setThemeandPalette}
+theme_set(theme_minimal())
+theme_update(axis.text.x = element_text(
+angle = -90,
+hjust = 0.5,
+vjust = 0.5,
+size = 20
+))
+```
+
+Read and Change variable types in experimental metadata data.table
+```{r readMetadata}
+dt_md <- fread("ExperimentalMetaData/GlobalLayout.txt")
+
+
+
+dt_md[, `:=`(treatment = factor(treatment, levels = c("si-Control",
+                                              "si-ESRP1-2"
+                                                     )))]
+```
+
+Set RegEx patterns for directory searches for cell level data.
+```{r regexFilename}
+pat_c <- ".*Nuclei Final\\[0\\]\\.txt$" # Pattern for Single Cell data files
+```
+
+Create a list of the RegEx patterns set in the previous chunk. **Important:** the list names will be carried over all the next steps!!!
+
+* c = cell level data
+
+```{r patList}
+pat_list <- list(c= pat_c)
+```
+
+Recursively search the `ObjectLevelData` directory and its subdirectories for files whose name includes the RegEx patterns defined two chunks above. The `path_list` functon outputs absolute file names. `path_list` is a list containing all the filenames on a per cell-level.
+```{r directorySearch}
+list_files <- function(x) {
+  dir(
+  path = 'ObjectLevelData/',
+  pattern = x,
+  full.names = TRUE,
+  recursive = TRUE,
+  include.dirs = TRUE
+  )
+}
+
+path_list <- llply(pat_list, list_files) 
+```
+
+Extract file names from absolut path and set them as list element names. 
+```{r trimNames}
+trim_names <- function(x) {
+  names(x) <-
+  basename(x) # This assigns the filename to the file that it is read
+  y <- x ## This is necessary because of scoping issues
+}
+
+path_list <- llply(path_list, trim_names) 
+```
+
+Recursively read and merge object level data files as data.frames. Rows are labeled with relative filenames (The `.id` variable). This and the previous chunks are slightly modified tricks adopted from H. Wickam ["Tidy Data" paper](http://vita.had.co.nz/papers/tidy-data.pdf).
+```{r readMerge}
+read_merge <- function(x) {
+  dt <- as.data.table(ldply(x, fread, sep = "\t", na.strings = NULL))
+}
+
+dt_list <- llply(path_list, read_merge)
+```
+
+Separate the cell level data from the distance and spot level data.
+```{r deleteDtList}
+dt_cell <- dt_list$c
+
+rm(dt_list)
+```
+
+Change attribute names and create a new `im_acq` variable to indicate 2D or 3D imaging acquisitions.
+```{r changeNames}
+setnames(
+  dt_cell,
+  c("Row",
+    "Column",
+    "ScreenName",
+    "WellName",
+    "Nuclei Final - Number of Positive 647- per Cell",
+    "Nuclei Final - Number of Positive 562- per Cell",
+    "Nuclei Final - Number of Positive 488- per Cell"
+  ),
+  c("row",
+    "column",
+    "plate",
+    "well",
+    "Far_Red",
+    "Red",
+    "Green")
+  )
+```
+
+Join measurementa data with experimental metadata.
+```{r}
+setkey(dt_md, row, column)
+setkey(dt_cell, row, column)
+
+dt_full <- dt_cell[dt_md, nomatch = 0] 
+```
+
+
+```{r, echo = F}
+dt_ESRP <- dt_full %>% filter(probe=="ESRP" )
+dt_Screen <- dt_full %>% filter(probe=="SCREEN")
+
+```
+
+
+Plotting IIIB data
+```{r, echo = F}
+spot_IIIB_violin <- ggplot(dt_Screen, aes(x = treatment, y =  Green ))
+
+spot_IIIB_violin + geom_violin(fill = "green4") + geom_boxplot(width=0.1, color="black", fill ="white", outlier.shape = NA)+
+  ylim(0,35)+
+  scale_fill_brewer(palette = "Set1")+
+  labs(y = "FGFR2-IIIb HCR Spots per cell") +
+  theme_classic()+
+  theme(
+  legend.position ="none",
+                axis.title.x = element_blank(),
+                axis.title = element_text(size = 18, color="black", face="bold"),
+                axis.text = element_text(size=16,color="black", face="bold"))
+```
+
+
+plotting Full data
+```{r, echo = F}
+spot_Full_violin <- ggplot(dt_Screen, aes(x = treatment, y =  Far_Red))
+
+spot_Full_violin + geom_violin(fill = "red3") +geom_boxplot(width=0.1, color="black", fill ="white", outlier.shape = NA)+
+           ylim(0,70)+
+  scale_fill_brewer(palette = "Set1")+
+  labs(y = "FGFR2-D7-10 HCR Spots per cell") +
+  theme_classic()+
+  theme(
+  legend.position ="none",
+                axis.title.x = element_blank(),
+                axis.title = element_text(size = 18, color="black", face="bold"),
+                axis.text = element_text(size=16,color="black", face="bold"))
+```
+        
+
+plotting TBP data
+```{r, echo = F}
+spot_TBP_violin <- ggplot(dt_Screen, aes(x = treatment, y =  Red))
+
+spot_TBP_violin + geom_violin(fill = "magenta2") +
+  geom_boxplot(width=0.15, color="black", fill ="white", outlier.shape = NA)+
+           ylim(0,50)+
+  scale_fill_brewer(palette = "Set1")+
+  labs(y = "TBP HCR Spots per cell") +
+  theme_classic()+
+  theme(
+  legend.position ="none",
+                axis.title.x = element_blank(),
+                axis.title = element_text(size = 18, color="black", face="bold"),
+                axis.text = element_text(size=16,color="black", face="bold"))
+```
+
+
+looking at relationships between targets
+```{r, fig.length = 14, fig.width = 7}
+spot_scat1 <- ggplot(dt_Screen, aes(x = Far_Red, y =  Green))
+
+spot_scat1 + geom_point(size=0.8, shape=19)+geom_hex(bins=50)+
+  scale_fill_viridis() + theme_bw()+
+  facet_wrap(treatment ~ .)+
+  geom_smooth(method = lm)+
+  xlab("FGFR2-D7-10 HCR Spot per Cell") +
+                 ylab("FGFR2-IIIb HCR Spots per Cell")+
+  theme(
+            strip.text.x = element_text(size = 14),
+            legend.title = element_text(size=14), #change legend title font size
+            legend.text = element_text(size=12, face="bold"), #change legend text font size
+            axis.title = element_text(size = 14, color="black", face="bold"),
+            axis.text = element_text(size=12,color="black", face="bold"))
+```
+
+```{r, fig.length = 14, fig.width = 7}
+spot_scat1 <- ggplot(dt_Screen, aes(x = Far_Red, y =  Green))
+
+spot_scat1 + geom_point(size=0.8, shape=19)+geom_hex(bins=50)+
+  scale_fill_viridis() + theme_bw()+
+  facet_wrap(treatment ~ .)+
+  geom_smooth(method = lm)+
+  stat_regline_equation(label.x=01, label.y=55, size=4) +
+        stat_cor(label.x=01, label.y=60, size = 4)+
+  xlab("FGFR2-D7-10 HCR Spot per Cell") +
+                 ylab("FGFR2-IIIb HCR Spots per Cell")+
+  theme(
+            strip.text.x = element_text(size = 14),
+            legend.title = element_text(size=14), #change legend title font size
+            legend.text = element_text(size=12, face="bold"), #change legend text font size
+            axis.title = element_text(size = 14, color="black", face="bold"),
+            axis.text = element_text(size=12,color="black", face="bold"))
+```
+
+```{r, fig.length = 14, fig.width = 7}
+spot_scat2.1 <- ggplot(dt_Screen, aes(x = Far_Red, y = Red))
+
+spot_scat2.1 + geom_point(size=0.8, shape=19)+geom_hex(bins=50)+
+  scale_fill_viridis() + theme_bw()+
+  facet_wrap(treatment ~ .)+
+  geom_smooth(method = lm)+
+stat_regline_equation(label.x=01, label.y=55, size=4) +
+        stat_cor(label.x=01, label.y=60, size = 4)+
+  xlab("FGFR2-D7-10 HCR Spot per Cell") +
+                 ylab("TBP HCR Spots per Cell")+
+  theme(
+            strip.text.x = element_text(size = 14),
+            legend.title = element_text(size=14), #change legend title font size
+            legend.text = element_text(size=12, face="bold"), #change legend text font size
+            axis.title = element_text(size = 14, color="black", face="bold"),
+            axis.text = element_text(size=12,color="black", face="bold"))
+```
+
+
+
+```{r, fig.length = 14, fig.width = 7}
+spot_scat2 <- ggplot(dt_Screen, aes(x = Far_Red, y = Red))
+
+spot_scat2 + geom_point(size=0.8, shape=19)+geom_hex(bins=50)+
+  scale_fill_viridis() + theme_bw()+
+  facet_wrap(treatment ~ .)+
+  geom_smooth(method = lm)+
+  xlab("FGFR2-D7-10 HCR Spot per Cell") +
+                 ylab("TBP HCR Spots per Cell")+
+  theme(
+            strip.text.x = element_text(size = 14),
+            legend.title = element_text(size=14), #change legend title font size
+            legend.text = element_text(size=12, face="bold"), #change legend text font size
+            axis.title = element_text(size = 14, color="black", face="bold"),
+            axis.text = element_text(size=12,color="black", face="bold"))
+```
+
+
+Document the information about the analysis session
+```{r sessionInfo, include=TRUE, echo=TRUE, results='markup'}
+sessionInfo()

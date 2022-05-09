@@ -722,6 +722,16 @@
         "vctrs"
       ]
     },
+    "hexbin": {
+      "Package": "hexbin",
+      "Version": "1.28.2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "76314b69dc54f8c14204063a2fd6d74a",
+      "Requirements": [
+        "lattice"
+      ]
+    },
     "highr": {
       "Package": "highr",
       "Version": "0.9",
