@@ -1,14 +1,18 @@
 ---
-title:  FGFR2 HCR siKinome Screen - No4 - Part 1 - cellHTS2 Data prep
-author: "Asaf Shilo"
-date: "April, 23 2020"
-output: "html_document"
+title:  "FGFR2 HCR siKinome Screen - No4 - Part 1 - cellHTS2 Data prep"
+author: "Asaf Shilo/Gianluca Pegoraro"
+date: "May 11th 2022"
+output: github_document
 ---
+
 ## README
-This Script is used to generate the data formatted for CellHTS2 analysis.
+
+This Script is used to generate the data formatted for `cellHTS2` analysis.
 
 ## Setup
+
 Load packages.
+
 ```{r}
 library(tidyverse)
 library(readxl)
@@ -17,16 +21,17 @@ library(ineq)
 ```
 
 ### User variables input and settings specification
+
 ```{r measSelection}
-METADATA_DIR<- "HTS2_Metadata"
+METADATA_DIR<- "hts2_metadata"
 
-IN_DIR <- "HTS2_Input"
+IN_DIR <- "hts2_input"
 
-OUT_DIR <- "HTS2_Output"
+OUT_DIR <- "hts2_output"
 
 OBJECT_DIR <- "Object_Data"
 
-ROOT_DIR <- "Reformatting_Metadata"
+ROOT_DIR <- "reformatting_metadata"
 
 AMBION_DIR <- file.path(ROOT_DIR, "Ambion_files")
 
@@ -39,9 +44,10 @@ STAMP_DIR <- file.path(ROOT_DIR, "Mother_Plates")
 GLOB_PAT <- "*Nuclei Final[0].txt"
 ```
 
-We specified the location of the Columbus .txt results file, the original ThermoFisher files containing the identity and position of the siRNA oligos in the 96-well plates (`r OBJECT_DIR`), and of the metadata obtained from the Janus logs (`r file.path(ROOT_DIR, AMBION_DIR)`, `r file.path(ROOT_DIR, RESUSP_DIR)`, `r file.path(ROOT_DIR, COMP_DIR)`, and  `r file.path(ROOT_DIR, STAMP_DIR)` ). 
+We specified the location of the Columbus .txt results file, the original ThermoFisher files containing the identity and position of the siRNA oligos in the 96-well plates (`r OBJECT_DIR`), and of the metadata obtained from the Janus logs (`r file.path(ROOT_DIR, AMBION_DIR)`, `r file.path(ROOT_DIR, RESUSP_DIR)`, `r file.path(ROOT_DIR, COMP_DIR)`, and `r file.path(ROOT_DIR, STAMP_DIR)` ).
 
-Generate the `r IN_DIR` directory for the well level Columbus data to be used in the`cellHTS2` analysis. In addition, create an empty template for the `cellHTS2` description file in the `r METADATA_DIR` directory. **This file contains information about the experiment, and it must be filled in in a text editor before continuing with the analysis. Without this file cellHTS2 won't run**. 
+Generate the `r IN_DIR` directory for the well level Columbus data to be used in the`cellHTS2` analysis. In addition, create an empty template for the `cellHTS2` description file in the `r METADATA_DIR` directory. **This file contains information about the experiment, and it must be filled in in a text editor before continuing with the analysis. Without this file cellHTS2 won't run**.
+
 ```{r makeDir}
 if(!dir_exists(IN_DIR)){
 dir_create(IN_DIR)
@@ -53,11 +59,11 @@ if(!file_exists(file.path(METADATA_DIR,"Description.txt"))) {
 ```
 
 Set the `knitr` options and the `ggplot2` theme.
+
 ```{r setOptions}
 knitr::opts_chunk$set(
     cache = FALSE,
-    fig.path = paste0(METADATA_DIR, "/"),
-    dev = c("png", "pdf"),
+    fig.path = "output/",
     fig.height = 9,
     fig.width = 12,
     message = FALSE,
@@ -68,7 +74,9 @@ theme_set(theme_bw())
 ```
 
 ## Data and metadata input and wrangling
-Read the siRNA layout information provided by ThermoFisher, rename some variables, eliminate empty rows, and select only relevant columns. 
+
+Read the siRNA layout information provided by ThermoFisher, rename some variables, eliminate empty rows, and select only relevant columns.
+
 ```{r readGeneList}
 names_selection <- syms(
   c(
@@ -102,8 +110,8 @@ gene_tbl <- dir_ls(path = AMBION_DIR,
 glimpse(gene_tbl)
 ```
 
-
 Read the Janus logs for resuspension, compression from 96- to 384-well format into the `mother` plates and stamping into the `daughter` plates (i.e. the Echo LDV-384 plates).
+
 ```{r readJanusLogs}
 read_logs <- function(path,
                       ext = "*.xlsx",
@@ -161,8 +169,22 @@ stamp_tbl <- read_logs(
 )
 ```
 
+### Download the data if needed
 
-Read the object-level Columbus data from the text files. The object level data must be in the `OBJECT_DIR` and the file names *must match* the `r GLOB_PAT` `glob` pattern. 
+Download unzip the Columbus results of the experiments from Figshare if they have not been already downloaded.
+
+```{r downlaod-data}
+if(!dir.exists(OBJECT_DIR)) {
+  URL <- ""
+  curl_download(URL, "input.zip")
+  unzip("input.zip")
+}
+```
+
+### Read Columbus Data
+
+Read the object-level Columbus data from the text files. The object level data must be in the `OBJECT_DIR` and the file names *must match* the `r GLOB_PAT` `glob` pattern.
+
 ```{r readColumbusData, include=FALSE}
 read_columbus_results <- function(path, pattern) {
   dir_ls(path = path,
@@ -191,8 +213,8 @@ read_columbus_results <- function(path, pattern) {
 
 ```
 
-
 Calculate the well-level mean statistic for a variety of Columbus measurements. Also calculate the Gini coefficient for `spots_488_n`, `spots_561_n` and `spots_640_n`. Write the cumulative well-level results in the `r IN_DIR` directory.
+
 ```{r calculateWellLevelData}
 well_tbl <- cell_tbl %>% group_by(plate_index, 
                                   well_index,
@@ -236,18 +258,19 @@ well_tbl <- cell_tbl %>% group_by(plate_index,
             ungroup()
  
 
-write_tsv(well_tbl, path = file.path(IN_DIR, "Columbus_object_results.txt"))
+write_tsv(well_tbl, file = file.path(IN_DIR, "Columbus_object_results.txt"))
 
 glimpse(well_tbl)
 ```
 
-reorder the table
+Reorder the table.
+
 ```{r}
 well_tbl <- well_tbl[ ,c(1:14,18,20,22,15:16,19,21,23,17)]
 ```
 
-
 Create input and output folder hierarchies in the `r IN_DIR` and `r OUT_DIR` directories, respectively.
+
 ```{r}
 well_tbl %>%
   select(cell_n:FGFR2_Full_ineq) %>%
@@ -258,7 +281,8 @@ well_tbl %>%
   names() %>% walk(~ dir_create(file.path(OUT_DIR, .x)))
 ```
 
-Assign a plate number to the Mother plates. For now this is a manual operation. 
+Assign a plate number to the Mother plates. For now this is a manual operation.
+
 ```{r runsNumber}
 run_tbl <- tibble(mother_barcode = c(paste0('HT000', seq(46, 51))),
                   plate_number = 1:6)
@@ -267,6 +291,7 @@ compr_tbl <- left_join(compr_tbl, run_tbl, by = 'mother_barcode')
 ```
 
 Join well annotations from the Thernmo FISHER table with the logs obtained from the Janus compression step.
+
 ```{r joinLevel1}
 join1 <- left_join(compr_tbl,
                    gene_tbl,
@@ -295,8 +320,8 @@ join1 <- left_join(compr_tbl,
 glimpse(join1)
 ```
 
-
 Join the resulting table (`join1`) with the logs from the stamping plates step (Generation of the diluted daughter plates).
+
 ```{r joinLevel2}
 join2 <-
   left_join(stamp_tbl, join1, by = c("mother_barcode", "mother_well")) %>%
@@ -324,7 +349,8 @@ join2 <-
 glimpse(join2)
 ```
 
-## siRNA oligos layout 
+## siRNA oligos layout
+
 ```{r ambionLayout, echo = FALSE}
 ambion_layout <-
   ggplot(gene_tbl, aes(x = Col, y = Row))
@@ -373,13 +399,12 @@ reformat_layout + geom_point() +
   ggtitle("Ambion siKinome 384-well Reformat Layout")
 ```
 
-
-
-
-
 ## `cellHTS2` data wrangling
+
 ### `Annotation`
+
 Make the annotation file for `cellHTS2`, name it `Annotation.txt` and save it to the in the `r IN_DIR` directory.
+
 ```{r makeAnnotationTable}
 annotation_tbl <- join1 %>%
   select(
@@ -399,14 +424,15 @@ glimpse(annotation_tbl)
 write_tsv(annotation_tbl,
           path = file.path(METADATA_DIR, "Annotation.txt"))
 ```
+
 ### `Plate Configuration`
+
 Generate the configuration file `Plateconf.txt` for `cellHTS2` according to the documentation specifications:
-> The software expects this to be a rectangular table in a tabulator delimited text file, with mandatory columns Plate, Well, Content, plus two additional header lines that give the total number of wells and plates (see Table ?? for an example). The content of this file (except the two header lines) are stored in slot plateConf of x.
-As the name suggests, the Content column provides the content of each well in the plate (here referred to as the well annotation). Mainly, this annotation falls into four categories: empty wells, wells targeting genes of interest, control wells, and wells containing other things that do not fit in the previous categories. The first two types of wells should be indicated in the Content column of the plate configuration file by empty and sample, respectively, while the last type of wells should be indicated by other. The designation for the control wells in the Content column is more flexible. By default, the software expects them to be indicated by pos (for positive controls), or neg (for negative controls). However, other names are allowed, given that they are specified by the user whenever necessary (for example, when calling the writeReport function). This versatility for the control wells’ annotation is justified by the fact that, sometimes, multiple positive and/or negative controls can be employed in a given screen, making it useful to give different names to the distinct controls in the Content column. More- over, this versatility might be required in multi-channel screens for which we frequently have reporter-specific controls.
-The Well column contains the name of each well of the plate in alphanu- meric format (in this case, A01 to P24), while column Plate gives the plate number (1, 2, ...). These two columns are also allowed to contain regular expressions. In the plate configuration file, each well and plate should be covered by a rule, and in case of multiple definitions only the last one is considered. For example, in the file shown in Table ??, the rule specified by the first line after the column header indicates that all of the wells in each of the 57 assay plate contain “sample”. However, a following rule indicate that the content of wells A01, A02 and B01 and B02 differ from “sample”, containing other material (in this case, “other” and controls).
-Note that the well annotations mentioned above are used by the software in the normalization, quality control, and gene selection calculations. Data from wells that are annotated as empty are ignored, i. e. they are set to NA.
+
+> The software expects this to be a rectangular table in a tabulator delimited text file, with mandatory columns Plate, Well, Content, plus two additional header lines that give the total number of wells and plates (see Table ?? for an example). The content of this file (except the two header lines) are stored in slot plateConf of x. As the name suggests, the Content column provides the content of each well in the plate (here referred to as the well annotation). Mainly, this annotation falls into four categories: empty wells, wells targeting genes of interest, control wells, and wells containing other things that do not fit in the previous categories. The first two types of wells should be indicated in the Content column of the plate configuration file by empty and sample, respectively, while the last type of wells should be indicated by other. The designation for the control wells in the Content column is more flexible. By default, the software expects them to be indicated by pos (for positive controls), or neg (for negative controls). However, other names are allowed, given that they are specified by the user whenever necessary (for example, when calling the writeReport function). This versatility for the control wells’ annotation is justified by the fact that, sometimes, multiple positive and/or negative controls can be employed in a given screen, making it useful to give different names to the distinct controls in the Content column. More- over, this versatility might be required in multi-channel screens for which we frequently have reporter-specific controls. The Well column contains the name of each well of the plate in alphanu- meric format (in this case, A01 to P24), while column Plate gives the plate number (1, 2, ...). These two columns are also allowed to contain regular expressions. In the plate configuration file, each well and plate should be covered by a rule, and in case of multiple definitions only the last one is considered. For example, in the file shown in Table ??, the rule specified by the first line after the column header indicates that all of the wells in each of the 57 assay plate contain “sample”. However, a following rule indicate that the content of wells A01, A02 and B01 and B02 differ from “sample”, containing other material (in this case, “other” and controls). Note that the well annotations mentioned above are used by the software in the normalization, quality control, and gene selection calculations. Data from wells that are annotated as empty are ignored, i. e. they are set to NA.
 
 The configuration file tells `cellHTS2` where the samples, controls and empty wells are on each plate. The first 8 lines of the file (Headers and controls positions) are hardcoded for now. The samples layout are is appended from the processed information obtained from the Janus logs.
+
 ```{r makeConfigurationTable1}
 line1 <- "Wells: 384"
 line2 <- "Plates: 6"
@@ -434,7 +460,9 @@ conf <- file(file.path(METADATA_DIR, "Plateconf.txt"), "w")
 writeLines(header, conf)
 close(conf)
 ```
+
 The samples layout is appended from the processed information obtained from the Janus logs and is written out to the the `r METADATA_DIR` directory.
+
 ```{r makeConfigurationTable2}
 config_tbl <- annotation_tbl %>%
   select(Plate, Well) %>%
@@ -446,16 +474,21 @@ write_tsv(config_tbl,
           path = file.path(METADATA_DIR, "Plateconf.txt"),
           append = T) # append 
 ```
+
 ### `Measurements`
-Generate a `Master_Barcode_List.txt` file and save it in the working directory (i.e. the same directory where the .Rmd file is). According to the `cellHTS2` specifications, the file should have these columns: `PlateName` (The plate barcode, as determined in the Janus log files, a string), `Plate` (The plate number in the library, a number), `Replicate` (Self explanatory, a number) and `Batch` (if the experiment or replicate was run in different batches, not necessary). This file contains the information on which plates have been analyzed, and on what the internal organization of the run is.
-The `Master_Barcode_List.txt` file is used to generate the measurement files to be read by `cellHTS2`.
+
+Generate a `Master_Barcode_List.txt` file and save it in the working directory (i.e. the same directory where the .Rmd file is). According to the `cellHTS2` specifications, the file should have these columns: `PlateName` (The plate barcode, as determined in the Janus log files, a string), `Plate` (The plate number in the library, a number), `Replicate` (Self explanatory, a number) and `Batch` (if the experiment or replicate was run in different batches, not necessary). This file contains the information on which plates have been analyzed, and on what the internal organization of the run is. The `Master_Barcode_List.txt` file is used to generate the measurement files to be read by `cellHTS2`.
+
 ```{r readMasterBarcodeList}
 barcodes_tbl <- read_tsv(file.path(METADATA_DIR, "Master_Barcode_List.txt"))
 
 glimpse(barcodes_tbl)
 ```
+
 ### `Plate List`
-Generate and writeout the `cellHTS2` Platelist.txt file in the `r IN_DIR` directory. 
+
+Generate and writeout the `cellHTS2` Platelist.txt file in the `r IN_DIR` directory.
+
 ```{r makePlatelist}
 well_tbl %>%
   left_join(barcodes_tbl, by = c("plate_index" = "PlateName")) %>%
@@ -477,7 +510,9 @@ dir_info(path = IN_DIR,
          glob = "*.txt",
          recurse = T) %>% select(1:2)
 ```
-Reformat the well names according to cellHTS2 specifications and  write out one `cellHTS2` measurement files on a per measurement, per plate basis in the `r IN_DIR` directory.
+
+Reformat the well names according to cellHTS2 specifications and write out one `cellHTS2` measurement files on a per measurement, per plate basis in the `r IN_DIR` directory.
+
 ```{r formatWellsHTS2Format}
 meas_tbl <- 
   left_join(well_tbl, barcodes_tbl, by = c("plate_index" = "PlateName")) %>%
@@ -504,7 +539,9 @@ dir_info(path = IN_DIR,
          glob = "*_cellHTS2.txt",
          recurse = T) %>% select(1:2)
 ```
+
 Document the information about the analysis session
+
 ```{r sessionInfo, results='markup'}
 sessionInfo()
 ```

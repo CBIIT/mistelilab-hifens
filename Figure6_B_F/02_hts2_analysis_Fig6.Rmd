@@ -1,8 +1,8 @@
 ---
-title:   FGFR2 HCR siKinome Screen - No4 - Part 2 - cellHTS2 Data analysis
-author: "Asaf Shilo"
-date: "April, 23 2020"
-output: "html_document"
+title:   "FGFR2 HCR siKinome Screen - No4 - Part 2 - cellHTS2 Data analysis"
+author: "Asaf Shilo/Gianluca Pegoraro"
+date: "May 11th 2022"
+output: github_document
 ---
 ## README
 This script is used to analyze siRNA screen data obtained with High-Content Image analysis. In particular, the siRNA library used is the ThermoFisher siKinome. The library contains 3 oligo siRNA sequences per gene against 704 genes that have kinase domains. 
@@ -20,6 +20,15 @@ Load packages.
 library(tidyverse)
 library(cellHTS2)
 ```
+Set Knitr options.
+
+```{r, include=FALSE, warning=FALSE}
+knitr::opts_chunk$set(
+  message = FALSE,
+  warning = FALSE
+  )
+```
+
 ### User variables input and settings specification
 Choose a Columbus image analysis result variable that needs to be analized in `cellHTS2`. This might change from analysis to analysis.
 The chunk below assigns the Columbus variable chosen for analysis and sets the `cellHTS2` input and output directories names accordingly . 
@@ -91,7 +100,7 @@ calculate_HTS2 <- function(meas_select, in_dir = NULL, metadata_dir = NULL, out_
                                 outdir = file.path(out_dir, 
                                                    meas_select),
                                 force = TRUE,
-                                mainScriptFile = "HTS2_Analysis.Rmd")
+                                mainScriptFile = "02_hts2_analysis_Fig6.Rmd")
   
   #Write the results table in the appropriate output directory                             
   results_tbl <- getTopTable(cellHTSlist = list("raw" = obj,
@@ -137,10 +146,11 @@ calculate_HTS2 <- function(meas_select, in_dir = NULL, metadata_dir = NULL, out_
 ```
 
 ```{r}
-var_names %>% walk(calculate_HTS2, in_dir = "HTS2_Input/", metadata_dir = "HTS2_Metadata/", out_dir = "HTS2_Output/")
+var_names %>% walk(calculate_HTS2, in_dir = "hts2_input/", metadata_dir = "hts2_metadata/", out_dir = "hts2_output/")
 ```
 
-Document the information about the analysis session
+Document the information about the analysis session.
+
 ```{r sessionInfo, results='markup'}
 sessionInfo()
 ```

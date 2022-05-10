@@ -1,11 +1,11 @@
 ---
 title: "FGFR2 HCR siKinome Screen - No4 - Part 3 - Downstream analysis"
-author: "Asaf Shilo"
-date: "February 19 2020"
-output:
-  pdf_document: default
-  html_document: default
+author: "Asaf Shilo/Gianluca Pegoraro"
+date: "May 11th 2022"
+output: github_document
 ---
+
+### Analysis Setup
 
 ```{r}
 library(tidyverse)
@@ -15,9 +15,7 @@ library(fs)
 
 ```{r, include=FALSE, warning=FALSE}
 knitr::opts_chunk$set(
-  fig.path = 'Output',
-  cache = FALSE,
-  dev = c("png", "pdf"),
+  fig.path = 'output/',
   message = FALSE,
   warning = FALSE
 )
@@ -34,6 +32,8 @@ theme_update(
 )
 ```
 
+### Read cellHTS2 analysis results
+
 ```{r}
 read_hts2_results <- function(path, glob) {
   dir_ls(path = path,
@@ -42,16 +42,14 @@ read_hts2_results <- function(path, glob) {
     map_df(read_tsv,
            .id = "file_name")
 }
-```
 
-```{r}
 glob_path <- "*Results_table.txt"
 ```
 
 ```{r}
-all_tbl <- read_hts2_results("HTS2_Output", glob_path) %>%
+all_tbl <- read_hts2_results("hts2_output", glob_path) %>%
     filter(!(is.na(score) | wellAnno == "pos")) %>%
-    mutate(prop = str_match(file_name, "HTS2_Output/(.*?)/")[,2]) %>%
+    mutate(prop = str_match(file_name, "hts2_output/(.*?)/")[,2]) %>%
     select(plate, 
            well, 
            control = wellAnno, 
@@ -83,13 +81,13 @@ all_tbl <- read_hts2_results("HTS2_Output", glob_path) %>%
 ```{r}
 glimpse(all_tbl)
 ```
+### Filterin operations
 
 ```{r, echo = F}
 Controls_only_all_tbl <-
   filter(all_tbl,control=="siESRP1" | control == "siESRP2" | control =="siScramble")%>%
   select(-starts_with("raw"), -starts_with("ratio"), -starts_with("norm"))
 ```
-
 
 ```{r, echo = F}
 Library_only_all_tbl <-
@@ -101,37 +99,15 @@ Library_only_all_tbl <-
 Library_only_an_Hits_tbl <-Library_only_all_tbl[ , c(1:6,11,16)]
 ```
 
+### Plot Figures
 
-```{r, echo = F}
-FGFR2_IIIB_n <- all_tbl %>% ggplot(aes(x = well, 
-                                 y = raw_repeat_1_FGFR2_IIIB_spots_mean, color = as.factor(plate)))
-                                         
-IIIb_n<-FGFR2_IIIB_n + geom_point(size = (1))+
-   scale_color_manual(values=c('#F8766D','#B79F00', '#00BA38', '#00BFC4', '#619CFF', '#F564E3'), name="plate index") +
-  xlab("Well index") +
-  ylab("FGFR2-IIIb HCR spots per cell (average per well)") +
-  theme_classic()+
-                theme(
-                legend.text = element_text(size=8),
-                
-               
-                axis.title.x = element_text(color="black",size = 8),
-                axis.text.x = element_blank(),
-                axis.title.y = element_text(color="black",size = 8),
-                axis.text.y = element_text(color="black",size=8))
+Figure 3B.
 
-IIIb_n
-```
-
-```{r, echo = F}
-ggsave("IIIb_n.pdf", width=11, height = 8)
-```
-
-```{r, echo = F}
+```{r Fig3_B, echo = F}
 FGFR2_Full_n <- all_tbl %>% ggplot(aes(x = well, 
                                  y = raw_repeat_1_FGFR2_Full_spots_mean, color = as.factor(plate)))
                                          
-Full_n<- FGFR2_Full_n + geom_point(size = (1))+
+FGFR2_Full_n + geom_point(size = (1))+
  scale_color_manual(values=c('#F8766D','#B79F00', '#00BA38', '#00BFC4', '#619CFF', '#F564E3'), name="plate index") +
   xlab("Well index") +
   ylab("FGFR2-Full HCR spots per cell (average per well)") +
@@ -144,20 +120,36 @@ Full_n<- FGFR2_Full_n + geom_point(size = (1))+
                 axis.text.x = element_blank(),
                 axis.title.y = element_text(color="black",size = 8),
                 axis.text.y = element_text(color="black",size=8))
-
-Full_n
 ```
 
-```{r, echo = F}
-ggsave("Full_n.pdf", width=11, height = 8)
+Figure 3C.
+
+```{r Fig3_C, echo = F}
+FGFR2_IIIB_n <- all_tbl %>% ggplot(aes(x = well, 
+                                 y = raw_repeat_1_FGFR2_IIIB_spots_mean, color = as.factor(plate)))
+                                         
+FGFR2_IIIB_n + geom_point(size = (1))+
+   scale_color_manual(values=c('#F8766D','#B79F00', '#00BA38', '#00BFC4', '#619CFF', '#F564E3'), name="plate index") +
+  xlab("Well index") +
+  ylab("FGFR2-IIIb HCR spots per cell (average per well)") +
+  theme_classic()+
+                theme(
+                legend.text = element_text(size=8),
+                
+               
+                axis.title.x = element_text(color="black",size = 8),
+                axis.text.x = element_blank(),
+                axis.title.y = element_text(color="black",size = 8),
+                axis.text.y = element_text(color="black",size=8))
 ```
 
-```{r, echo = F}
+Figure 3F.
+
+```{r Fig3_F, echo = F}
 FGFR2_Full_IIIB <-all_tbl %>% ggplot(aes(x = score_FGFR2_IIIB_spots_mean, 
                                             y = score_FGFR2_Full_spots_mean))
- 
-                                         
-FGFR_Annot<-FGFR2_Full_IIIB + geom_point(shape = 21, color = "pink", size = 0.2 ) + 
+
+FGFR2_Full_IIIB + geom_point(shape = 21, color = "pink", size = 0.2 ) + 
   coord_equal() +
   xlab("Mean z-score FGFR IIIB HCR Spots") +
   ylab("Mean z-score FGFR Full HCR Spots") +
@@ -166,17 +158,11 @@ FGFR_Annot<-FGFR2_Full_IIIB + geom_point(shape = 21, color = "pink", size = 0.2 
   ggrepel::geom_text_repel(data = all_tbl[all_tbl$gene_symbol == 'FGFR1'  | all_tbl$gene_symbol == 'FGFR2' | all_tbl$gene_symbol == 'FGFR3'  | all_tbl$gene_symbol == 'FGFR4',],
                            color = "black",  min.segment.length = 0.05, seed = 42, box.padding = 0.7,
 aes(label=gene_symbol))+
-  
-  ggtitle("FGFR Full vs. FGFR IIIB Mean Number of HCR Spots per Cell")
-
-FGFR_Annot
-```
-
-```{r, echo = F}
-ggsave("FGFR_Annot.pdf")
+ggtitle("FGFR Full vs. FGFR IIIB Mean Number of HCR Spots per Cell")
 ```
 
 Document the information about the analysis session
+
 ```{r sessionInfo, results='markup'}
 sessionInfo()
 ```
