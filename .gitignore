@@ -5,7 +5,7 @@
 *.DS_Store
 */ObjectLevelData*
 *.zip
-*/Object_Data*
+*/Fig6_B_F_data*
 */hts2_input/*
 */hts2_output/*
 *Contents.csv

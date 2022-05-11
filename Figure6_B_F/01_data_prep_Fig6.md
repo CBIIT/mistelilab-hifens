@@ -1,7 +1,7 @@
 FGFR2 HCR siKinome Screen - No4 - Part 1 - cellHTS2 Data prep
 ================
 Asaf Shilo/Gianluca Pegoraro
-May 11th 2022
+May 12th 2022
 
 ## README
 
@@ -31,7 +31,17 @@ library(tidyverse)
 library(readxl)
 library(fs)
 library(ineq)
+library(curl)
 ```
+
+    ## Using libcurl 7.79.1 with LibreSSL/3.3.5
+
+    ## 
+    ## Attaching package: 'curl'
+
+    ## The following object is masked from 'package:readr':
+    ## 
+    ##     parse_date
 
 ### User variables input and settings specification
 
@@ -42,7 +52,7 @@ IN_DIR <- "hts2_input"
 
 OUT_DIR <- "hts2_output"
 
-OBJECT_DIR <- "Object_Data"
+OBJECT_DIR <- "Fig6_B_F_data"
 
 ROOT_DIR <- "reformatting_metadata"
 
@@ -59,7 +69,7 @@ GLOB_PAT <- "*Nuclei Final[0].txt"
 
 We specified the location of the Columbus .txt results file, the
 original ThermoFisher files containing the identity and position of the
-siRNA oligos in the 96-well plates (Object_Data), and of the metadata
+siRNA oligos in the 96-well plates (Fig6_B\_F_data), and of the metadata
 obtained from the Janus logs
 (reformatting_metadata/reformatting_metadata/Ambion_files,
 reformatting_metadata/reformatting_metadata/Resuspension,
@@ -222,7 +232,7 @@ they have not been already downloaded.
 
 ``` r
 if(!dir.exists(OBJECT_DIR)) {
-  URL <- ""
+  URL <- "https://figshare.com/ndownloader/files/35058931"
   curl_download(URL, "input.zip")
   unzip("input.zip")
 }
@@ -731,9 +741,10 @@ sessionInfo()
     ## [1] stats     graphics  grDevices utils     datasets  methods   base     
     ## 
     ## other attached packages:
-    ##  [1] ineq_0.2-13     fs_1.5.2        readxl_1.4.0    forcats_0.5.1  
-    ##  [5] stringr_1.4.0   dplyr_1.0.9     purrr_0.3.4     readr_2.1.2    
-    ##  [9] tidyr_1.2.0     tibble_3.1.7    ggplot2_3.3.6   tidyverse_1.3.1
+    ##  [1] curl_4.3.2      ineq_0.2-13     fs_1.5.2        readxl_1.4.0   
+    ##  [5] forcats_0.5.1   stringr_1.4.0   dplyr_1.0.9     purrr_0.3.4    
+    ##  [9] readr_2.1.2     tidyr_1.2.0     tibble_3.1.7    ggplot2_3.3.6  
+    ## [13] tidyverse_1.3.1
     ## 
     ## loaded via a namespace (and not attached):
     ##  [1] tidyselect_1.1.2 xfun_0.30        haven_2.5.0      colorspace_2.0-3

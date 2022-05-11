@@ -1,7 +1,7 @@
 ---
 title:  "FGFR2 HCR siKinome Screen - No4 - Part 1 - cellHTS2 Data prep"
 author: "Asaf Shilo/Gianluca Pegoraro"
-date: "May 11th 2022"
+date: "May 12th 2022"
 output: github_document
 ---
 
@@ -18,6 +18,7 @@ library(tidyverse)
 library(readxl)
 library(fs)
 library(ineq)
+library(curl)
 ```
 
 ### User variables input and settings specification
@@ -29,7 +30,7 @@ IN_DIR <- "hts2_input"
 
 OUT_DIR <- "hts2_output"
 
-OBJECT_DIR <- "Object_Data"
+OBJECT_DIR <- "Fig6_B_F_data"
 
 ROOT_DIR <- "reformatting_metadata"
 
@@ -175,7 +176,7 @@ Download unzip the Columbus results of the experiments from Figshare if they hav
 
 ```{r downlaod-data}
 if(!dir.exists(OBJECT_DIR)) {
-  URL <- ""
+  URL <- "https://figshare.com/ndownloader/files/35058931"
   curl_download(URL, "input.zip")
   unzip("input.zip")
 }
@@ -422,7 +423,7 @@ annotation_tbl <- join1 %>%
 glimpse(annotation_tbl)
 
 write_tsv(annotation_tbl,
-          path = file.path(METADATA_DIR, "Annotation.txt"))
+          file = file.path(METADATA_DIR, "Annotation.txt"))
 ```
 
 ### `Plate Configuration`
@@ -471,7 +472,7 @@ config_tbl <- annotation_tbl %>%
 glimpse(config_tbl)
 
 write_tsv(config_tbl,
-          path = file.path(METADATA_DIR, "Plateconf.txt"),
+          file = file.path(METADATA_DIR, "Plateconf.txt"),
           append = T) # append 
 ```
 
