@@ -236,35 +236,35 @@ Generate datasets for plotting.
 
 FGFR2-Full probes - Box plot for spot count
 
-![](outputFigS1_A_left-1.png)<!-- -->
+![](output/FigS1_A_left-1.png)<!-- -->
 
 FGFR2-Full probes - Box plot for intensity
 
-![](outputFigS1_A_right-1.png)<!-- -->
+![](output/FigS1_A_right-1.png)<!-- -->
 
 FGFR2-IIIb probes - Box plot for spot count
 
-![](outputFigS1_B_left-1.png)<!-- -->
+![](output/FigS1_B_left-1.png)<!-- -->
 
 FGFR2-IIIb probes - Box plot for intensity
 
-![](outputFigS1_B_right-1.png)<!-- -->
+![](output/FigS1_B_right-1.png)<!-- -->
 
 FGFR2-IIIc probes - Box plot for spot count
 
-![](outputFigS1_C_left-1.png)<!-- -->
+![](output/FigS1_C_left-1.png)<!-- -->
 
 FGFR2-IIIc probes - Box plot for intensity
 
-![](outputFigS1_C_right-1.png)<!-- -->
+![](output/FigS1_C_right-1.png)<!-- -->
 
 TBP probes - Box plot for spot count
 
-![](outputFigS1_D_left-1.png)<!-- -->
+![](output/FigS1_D_left-1.png)<!-- -->
 
 TBP probes - Box plot for intensity
 
-![](outputFigS1_D_right-1.png)<!-- -->
+![](output/FigS1_D_right-1.png)<!-- -->
 
 Document the information about the analysis session.
 

@@ -25,7 +25,7 @@ Set output folder.
 
 ```{r, include=FALSE, warning=FALSE}
 knitr::opts_chunk$set(
-  fig.path = 'output',
+  fig.path = 'output/',
   message = FALSE,
   warning = FALSE
   )
