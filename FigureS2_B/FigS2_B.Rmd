@@ -15,6 +15,7 @@ library(tidyverse)
 library(data.table)
 library(stringr)
 library(ggthemes)
+library(curl)
 ```
 
 ```{r, include=FALSE, warning=FALSE}

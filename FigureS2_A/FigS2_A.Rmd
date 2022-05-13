@@ -16,6 +16,7 @@ library(data.table)
 library(stringr)
 library(ggthemes)
 library(dplyr)
+library(curl)
 ```
 
 ```{r, include=FALSE, warning=FALSE}

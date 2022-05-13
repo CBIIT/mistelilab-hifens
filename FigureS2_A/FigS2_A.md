@@ -51,7 +51,17 @@ library(data.table)
 library(stringr)
 library(ggthemes)
 library(dplyr)
+library(curl)
 ```
+
+    ## Using libcurl 7.79.1 with LibreSSL/3.3.5
+
+    ## 
+    ## Attaching package: 'curl'
+
+    ## The following object is masked from 'package:readr':
+    ## 
+    ##     parse_date
 
 Set the palette and the running theme for ggplot2.
 
@@ -233,9 +243,10 @@ sessionInfo()
     ## [1] stats     graphics  grDevices utils     datasets  methods   base     
     ## 
     ## other attached packages:
-    ##  [1] ggthemes_4.2.4    data.table_1.14.2 forcats_0.5.1     stringr_1.4.0    
-    ##  [5] dplyr_1.0.9       purrr_0.3.4       readr_2.1.2       tidyr_1.2.0      
-    ##  [9] tibble_3.1.7      ggplot2_3.3.6     tidyverse_1.3.1   plyr_1.8.7       
+    ##  [1] curl_4.3.2        ggthemes_4.2.4    data.table_1.14.2 forcats_0.5.1    
+    ##  [5] stringr_1.4.0     dplyr_1.0.9       purrr_0.3.4       readr_2.1.2      
+    ##  [9] tidyr_1.2.0       tibble_3.1.7      ggplot2_3.3.6     tidyverse_1.3.1  
+    ## [13] plyr_1.8.7       
     ## 
     ## loaded via a namespace (and not attached):
     ##  [1] tidyselect_1.1.2 xfun_0.30        haven_2.5.0      colorspace_2.0-3
