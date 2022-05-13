@@ -168,79 +168,21 @@ dt_full <- dt_cell[dt_md, nomatch = 0]
 Generate datasets for plotting.
 
 ```{r}
-dt_IIIB <- filter(dt_full, probe == 'FGFR2-IIIb')
 dt_Full <- filter(dt_full, probe == 'FGFR2')
-dt_PGK1 <- filter(dt_full, probe == 'PGK1')
-dt_D7_10 <-filter(dt_full, probe == 'FGFR2-D7-10')
-dt_All <- filter (dt_full, probe == 'All')
-dt_MP<- filter(dt_full, probe !='FGFR2')
+dt_D7_10 <-filter(dt_full, probe == 'FGFR2-D7-10') 
 ```
 
 ### Plotting
 
-Plotting total FGFR2 in B1-FGFR2 System
+Plot Full transcript specific probes.
 
-```{r, fig.width=10,fig.height=8}
-spot_B1Full_violin <- ggplot(dt_Full, aes(x = cell_line, y = spot_n_488, fill = cell_line))
+```{r FigS4_B, fig.width=10,fig.height=9, echo = F}
+spot_Full_boxplot <- ggplot(dt_Full, aes(x = cell_line, y = spot_n_488))
 
-
-spot_B1Full_violin + geom_violin() + geom_boxplot(outlier.shape = NA, width=0.1, color="black", alpha=0.2)+
-            ylim(0,75)+
-            labs(y = "FGFR2-Full HCR Spots per cell") +
-                theme_classic()+
-                theme(
-                legend.position ="none",
-                plot.title = element_text(size = 24, hjust = 0.5, face = "bold"),
-                axis.title.x = element_blank(),
-                axis.text.x = element_text(angle = 45, hjust = 1),
-                axis.title = element_text(size = 20, color="black", face="bold"),
-                axis.text = element_text(size=20,color="black", face="bold"))
-```
-
-Plotting FGFR2-IIIb in B1-IIIB System
-
-```{r, fig.width=10,fig.height=8}
-spot_B1IIIb_violin <- ggplot(dt_IIIB, aes(x = cell_line, y = spot_n_488, fill = cell_line))
-
-spot_B1IIIb_violin + geom_violin() + geom_boxplot(outlier.shape = NA, width=0.1, color="black", alpha=0.2)+
-            ylim(0,25)+
-            labs(y = "FGFR2-IIIb HCR Spots per cell") +
-                theme_classic()+
-                theme(
-                legend.position ="none",
-                plot.title = element_text(size = 24, hjust = 0.5, face = "bold"),
-                axis.title.x = element_blank(),
-                axis.text.x = element_text(angle = 45, hjust = 1),
-                axis.title = element_text(size = 20, color="black", face="bold"),
-                axis.text = element_text(size=20,color="black", face="bold"))
-```
-
-Plotting PGK1 in B2-PGK1 System
-
-```{r, fig.width=10,fig.height=8}
-spot_B2PGK1_violin <- ggplot(dt_PGK1, aes(x = cell_line, y = spot_n_562, fill = cell_line))
-
-spot_B2PGK1_violin + geom_violin() + geom_boxplot(outlier.shape = NA, width=0.1, color="black", alpha=0.2)+
-            ylim(0,250)+
-            labs(y = "PGK1 HCR Spots per cell") +
-                theme_classic()+
-                theme(
-                legend.position ="none",
-                plot.title = element_text(size = 24, hjust = 0.5, face = "bold"),
-                axis.title.x = element_blank(),
-                axis.text.x = element_text(angle = 45, hjust = 1),
-                axis.title = element_text(size = 20, color="black", face="bold"),
-                axis.text = element_text(size=20,color="black", face="bold"))
-```
-
-Full transcript specific probes
-
-```{r, fig.width=10,fig.height=9}
-spot_Full_boxplot <- ggplot(dt_Full, aes(x = cell_line, y = spot_n_488, fill = cell_line))
-
-spot_Full_boxplot + geom_boxplot() +
+spot_Full_boxplot + geom_boxplot(fill = '#ff0000') +
             ylim(0,55)+
             labs(title = "FGFR2-Full", y = "FGFR2-Full HCR Spots per cell") +
+              scale_fill_manual() +
                 theme_classic()+
                 theme(
                 legend.position ="none",
@@ -251,107 +193,30 @@ spot_Full_boxplot + geom_boxplot() +
                 axis.text = element_text(size=20,color="black", face="bold"))
 ```
 
-D7-10 transcript specific probes
+Plot D7-10 transcript specific probes.
 
-```{r, fig.width=10,fig.height=9}
-spot_D7_10_boxplot <- ggplot(dt_D7_10, aes(x = cell_line, y = spot_n_647, fill = cell_line))
+```{r FigS4_C, fig.width=10,fig.height=9, echo = F}
+spot_D7_10_boxplot <-
+  ggplot(dt_D7_10, aes(x = cell_line, y = spot_n_647))
 
-spot_D7_10_boxplot + geom_boxplot() +
-            ylim(0,55)+
-            labs(title = "FGFR2-D7-10" ,y = "FGFR2-D7-10 HCR Spots per cell") +
-                theme_classic()+
-                theme(
-                legend.position ="none",
-                plot.title = element_text(size = 24, hjust = 0.5, face = "bold"),
-                axis.title.x = element_blank(),
-                axis.text.x = element_text(angle = 45, hjust = 1),
-                axis.title = element_text(size = 20, color="black", face="bold"),
-                axis.text = element_text(size=20,color="black", face="bold"))
+spot_D7_10_boxplot + geom_boxplot(fill = '#ff0000') +
+  ylim(0, 55) +
+  labs(title = "FGFR2-D7-10" , y = "FGFR2-D7-10 HCR Spots per cell") +
+  theme_classic() +
+  theme(
+    legend.position = "none",
+    plot.title = element_text(size = 24, hjust = 0.5, face = "bold"),
+    axis.title.x = element_blank(),
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    axis.title = element_text(size = 20, color = "black", face =
+                                "bold"),
+    axis.text = element_text(size = 20, color = "black", face =
+                               "bold")
+  )
 ```
 
-plots for ALL WITH 488 CHANNEL
+Document the information about the analysis session. 
 
-```{r, fig.width=10,fig.height=9}
-spot_488_boxplot <- ggplot(dt_MP, aes(x = probe, y = spot_n_488, fill = cell_line))
-
-spot_488_boxplot + geom_boxplot() +
-          ylim(0,25)+
-          labs(title = "FGFR2-IIIb", y = "FGFR2-IIIb HCR Spots per cell") +
-                theme_classic()+
-                theme(
-                legend.position =c(0.15, 0.9),
-                legend.title = element_blank(),
-                legend.text = element_text(size=18),
-                plot.title = element_text(size = 24, hjust = 0.5, face = "bold"),
-                axis.title.x = element_blank(),
-                axis.text.x = element_text(angle = 45, hjust = 1),
-                axis.title = element_text(size = 20, color="black", face="bold"),
-                axis.text = element_text(size=20,color="black", face="bold"))
+```{r sessionInfo, include=TRUE, echo=TRUE, results="markup"}
+sessionInfo()
 ```
-
-plots for ALL WITH 562 CHANNEL
-
-```{r, fig.width=10,fig.height=9}
-spot_562_boxplot <- ggplot(dt_MP, aes(x = probe, y = spot_n_562, fill = cell_line))
-
-spot_562_boxplot + geom_boxplot() +
-          ylim(0,200)+
-          labs(title = "PGK1" ,y = "PGK1 HCR Spots per cell") +
-                theme_classic()+
-                theme(
-                legend.position =c(0.15, 0.9),
-                legend.title = element_blank(),
-                legend.text = element_text(size=18),
-                plot.title = element_text(size = 24, hjust = 0.5, face = "bold"),
-                axis.title.x = element_blank(),
-                axis.text.x = element_text(angle = 45, hjust = 1),
-                axis.title = element_text(size = 20, color="black", face="bold"),
-                axis.text = element_text(size=20,color="black", face="bold"))
-```
-
-plots for ALL WITH 647 CHANNEL
-
-```{r, fig.width=10,fig.height=9}
-spot_647_boxplot <- ggplot(dt_MP, aes(x = probe, y = spot_n_647, fill = cell_line))
-
-spot_647_boxplot + geom_boxplot() +
-          ylim(0,100)+
-          labs(title  = "FGFR2-D7-10", y = "FGFR2-D7-10 HCR Spots per cell") +
-                theme_classic()+
-                theme(
-                legend.position =c(0.15, 0.9),
-                legend.title = element_blank(),
-                legend.text = element_text(size=18),
-                plot.title = element_text(size = 24, hjust = 0.5, face = "bold"),
-                axis.title.x = element_blank(),
-                axis.text.x = element_text(angle = 45, hjust = 1),
-                axis.title = element_text(size = 20, color="black", face="bold"),
-                axis.text = element_text(size=20,color="black", face="bold"))
-```
-
-create df with IIIb OE only
-
-```{r}
-dt_MP_IIIbOE <- filter(dt_MP, probe == 'All' & cell_line == 'U2OS FGFR2-IIIb')
-```
-
-```{r, }
-spot_FGFR2_scatter <- ggplot(dt_MP_IIIbOE, aes(x = spot_n_488, y = spot_n_647))
-
-spot_FGFR2_scatter + geom_point() +
-          geom_smooth(method = lm)+
-          
-          stat_regline_equation(label.x=04, label.y=195, size=5, face = "bold") +
-          stat_cor(label.x=04, label.y=175, size = 5, face = "bold")+
-            xlim(0,150)+
-            ylim(0,200)+
-            labs(y = "FGFR2-D7-10 HCR Spots per Cell ", x = "FGFR2-IIIb HCR Spots per Cell") +
-            theme_classic()+
-                theme(
-                plot.title = element_text(size = 12, hjust = 0.5, face = "bold"),
-                axis.text.x = element_text(angle = 45, hjust = 1),
-                axis.title = element_text(size = 14, color="black", face="bold"),
-                axis.text = element_text(size=12,color="black", face="bold"))
-```
-
-Document the information about the analysis session \`\`\`{r sessionInfo, include=TRUE, echo=TRUE, results='markup'} sessionInfo()
