@@ -114,7 +114,7 @@ they have not been already downloaded.
 
 ``` r
 if(!dir.exists("ObjectLevelData")) {
-  URL <- ""
+  URL <- "https://figshare.com/ndownloader/files/35015842"
   curl_download(URL, "input.zip")
   unzip("input.zip")
 }
