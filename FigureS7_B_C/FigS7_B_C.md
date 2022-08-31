@@ -1,7 +1,7 @@
-Figures S4B and S4C
+Figures S7B and S7C
 ================
 Asaf Shilo/Gianluca Pegoraro
-May 12th 2022
+August 31st 2022
 
 ### Analysis setup
 
@@ -64,7 +64,7 @@ library(ggpubr)
 library(curl)
 ```
 
-    ## Using libcurl 7.79.1 with LibreSSL/3.3.5
+    ## Using libcurl 7.79.1 with LibreSSL/3.3.6
 
     ## 
     ## Attaching package: 'curl'
@@ -230,11 +230,11 @@ dt_D7_10 <-filter(dt_full, probe == 'FGFR2-D7-10')
 
 Plot Full transcript specific probes.
 
-![](output/FigS4_B-1.png)<!-- -->
+![](output/FigS7_B-1.png)<!-- -->
 
 Plot D7-10 transcript specific probes.
 
-![](output/FigS4_C-1.png)<!-- -->
+![](output/FigS7_C-1.png)<!-- -->
 
 Document the information about the analysis session.
 
@@ -242,9 +242,9 @@ Document the information about the analysis session.
 sessionInfo()
 ```
 
-    ## R version 4.2.0 (2022-04-22)
+    ## R version 4.2.1 (2022-06-23)
     ## Platform: x86_64-apple-darwin17.0 (64-bit)
-    ## Running under: macOS Big Sur/Monterey 10.16
+    ## Running under: macOS Big Sur ... 10.16
     ## 
     ## Matrix products: default
     ## BLAS:   /Library/Frameworks/R.framework/Versions/4.2/Resources/lib/libRblas.0.dylib
@@ -265,16 +265,16 @@ sessionInfo()
     ## loaded via a namespace (and not attached):
     ##  [1] Rcpp_1.0.8.3     lubridate_1.8.0  assertthat_0.2.1 digest_0.6.29   
     ##  [5] utf8_1.2.2       R6_2.5.1         cellranger_1.1.0 backports_1.4.1 
-    ##  [9] reprex_2.0.1     evaluate_0.15    highr_0.9        httr_1.4.2      
-    ## [13] pillar_1.7.0     rlang_1.0.2      readxl_1.4.0     rstudioapi_0.13 
+    ##  [9] reprex_2.0.1     evaluate_0.15    highr_0.9        httr_1.4.4      
+    ## [13] pillar_1.7.0     rlang_1.0.4      readxl_1.4.0     rstudioapi_0.14 
     ## [17] car_3.0-13       rmarkdown_2.14   labeling_0.4.2   munsell_0.5.0   
-    ## [21] broom_0.8.0      compiler_4.2.0   modelr_0.1.8     xfun_0.30       
+    ## [21] broom_0.8.0      compiler_4.2.1   modelr_0.1.8     xfun_0.30       
     ## [25] pkgconfig_2.0.3  htmltools_0.5.2  tidyselect_1.1.2 fansi_1.0.3     
     ## [29] crayon_1.5.1     tzdb_0.3.0       dbplyr_2.1.1     withr_2.5.0     
-    ## [33] grid_4.2.0       jsonlite_1.8.0   gtable_0.3.0     lifecycle_1.0.1 
+    ## [33] grid_4.2.1       jsonlite_1.8.0   gtable_0.3.0     lifecycle_1.0.1 
     ## [37] DBI_1.1.2        magrittr_2.0.3   scales_1.2.0     cli_3.3.0       
     ## [41] stringi_1.7.6    carData_3.0-5    farver_2.1.0     ggsignif_0.6.3  
     ## [45] fs_1.5.2         xml2_1.3.3       ellipsis_0.3.2   generics_0.1.2  
-    ## [49] vctrs_0.4.1      tools_4.2.0      glue_1.6.2       hms_1.1.1       
+    ## [49] vctrs_0.4.1      tools_4.2.1      glue_1.6.2       hms_1.1.1       
     ## [53] abind_1.4-5      fastmap_1.1.0    yaml_2.3.5       colorspace_2.0-3
     ## [57] rstatix_0.7.0    rvest_1.0.2      knitr_1.39       haven_2.5.0

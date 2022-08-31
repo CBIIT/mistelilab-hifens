@@ -1,7 +1,7 @@
 ---
-title: "Figures S4B and S4C"
+title: "Figures S7B and S7C"
 author: "Asaf Shilo/Gianluca Pegoraro"
-date: "May 12th 2022"
+date: "August 31st 2022"
 output: github_document
 ---
 
@@ -176,7 +176,7 @@ dt_D7_10 <-filter(dt_full, probe == 'FGFR2-D7-10')
 
 Plot Full transcript specific probes.
 
-```{r FigS4_B, fig.width=10,fig.height=9, echo = F}
+```{r FigS7_B, fig.width=10,fig.height=9, echo = F}
 spot_Full_boxplot <- ggplot(dt_Full, aes(x = cell_line, y = spot_n_488))
 
 spot_Full_boxplot + geom_boxplot(fill = '#ff0000') +
@@ -195,7 +195,7 @@ spot_Full_boxplot + geom_boxplot(fill = '#ff0000') +
 
 Plot D7-10 transcript specific probes.
 
-```{r FigS4_C, fig.width=10,fig.height=9, echo = F}
+```{r FigS7_C, fig.width=10,fig.height=9, echo = F}
 spot_D7_10_boxplot <-
   ggplot(dt_D7_10, aes(x = cell_line, y = spot_n_647))
 
