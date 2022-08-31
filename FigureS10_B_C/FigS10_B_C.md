@@ -1,7 +1,7 @@
-Figures S7B and S7C
+Figures S10B and S10C
 ================
 Asaf Shilo/Gianluca Pegoraro
-May 12th 2022
+August 31st 2022
 
 ### Analysis setup
 
@@ -72,7 +72,7 @@ library(RColorBrewer)
 library(curl)
 ```
 
-    ## Using libcurl 7.79.1 with LibreSSL/3.3.5
+    ## Using libcurl 7.79.1 with LibreSSL/3.3.6
 
     ## 
     ## Attaching package: 'curl'
@@ -232,15 +232,15 @@ dt_ESRP <- dt_full %>% filter(probe=="ESRP" )
 
 Plot data for siESRP1.
 
-![](output/FigS7_B_top-1.png)<!-- -->
+![](output/FigS10_B_top-1.png)<!-- -->
 
 Plot data for siESRP2.
 
-![](output/FigS7_B_bottom-1.png)<!-- -->
+![](output/FigS10_B_bottom-1.png)<!-- -->
 
 Plot data for siESRP1 + siESRP2.
 
-![](output/FigS7_C-1.png)<!-- -->
+![](output/FigS10_C-1.png)<!-- -->
 
 Document the information about the analysis session.
 
@@ -248,9 +248,9 @@ Document the information about the analysis session.
 sessionInfo()
 ```
 
-    ## R version 4.2.0 (2022-04-22)
+    ## R version 4.2.1 (2022-06-23)
     ## Platform: x86_64-apple-darwin17.0 (64-bit)
-    ## Running under: macOS Big Sur/Monterey 10.16
+    ## Running under: macOS Big Sur ... 10.16
     ## 
     ## Matrix products: default
     ## BLAS:   /Library/Frameworks/R.framework/Versions/4.2/Resources/lib/libRblas.0.dylib
@@ -270,7 +270,7 @@ sessionInfo()
     ## [17] tidyverse_1.3.1    plyr_1.8.7        
     ## 
     ## loaded via a namespace (and not attached):
-    ##  [1] httr_1.4.2       jsonlite_1.8.0   splines_4.2.0    carData_3.0-5   
+    ##  [1] httr_1.4.4       jsonlite_1.8.0   splines_4.2.1    carData_3.0-5   
     ##  [5] modelr_0.1.8     assertthat_0.2.1 highr_0.9        cellranger_1.1.0
     ##  [9] yaml_2.3.5       pillar_1.7.0     backports_1.4.1  lattice_0.20-45 
     ## [13] glue_1.6.2       digest_0.6.29    ggsignif_0.6.3   rvest_1.0.2     
@@ -279,10 +279,10 @@ sessionInfo()
     ## [25] mgcv_1.8-40      generics_0.1.2   farver_2.1.0     car_3.0-13      
     ## [29] ellipsis_0.3.2   withr_2.5.0      cli_3.3.0        magrittr_2.0.3  
     ## [33] crayon_1.5.1     readxl_1.4.0     evaluate_0.15    fs_1.5.2        
-    ## [37] fansi_1.0.3      nlme_3.1-157     rstatix_0.7.0    xml2_1.3.3      
-    ## [41] tools_4.2.0      hms_1.1.1        lifecycle_1.0.1  munsell_0.5.0   
-    ## [45] reprex_2.0.1     compiler_4.2.0   rlang_1.0.2      grid_4.2.0      
-    ## [49] rstudioapi_0.13  labeling_0.4.2   rmarkdown_2.14   gtable_0.3.0    
+    ## [37] fansi_1.0.3      nlme_3.1-159     rstatix_0.7.0    xml2_1.3.3      
+    ## [41] tools_4.2.1      hms_1.1.1        lifecycle_1.0.1  munsell_0.5.0   
+    ## [45] reprex_2.0.1     compiler_4.2.1   rlang_1.0.4      grid_4.2.1      
+    ## [49] rstudioapi_0.14  labeling_0.4.2   rmarkdown_2.14   gtable_0.3.0    
     ## [53] abind_1.4-5      DBI_1.1.2        R6_2.5.1         gridExtra_2.3   
     ## [57] lubridate_1.8.0  knitr_1.39       fastmap_1.1.0    utf8_1.2.2      
     ## [61] stringi_1.7.6    Rcpp_1.0.8.3     vctrs_0.4.1      dbplyr_2.1.1    

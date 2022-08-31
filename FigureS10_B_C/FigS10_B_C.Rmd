@@ -1,7 +1,7 @@
 ---
-title: "Figures S7B and S7C"
+title: "Figures S10B and S10C"
 author: "Asaf Shilo/Gianluca Pegoraro"
-date: "May 12th 2022"
+date: "August 31st 2022"
 output: github_document
 ---
 
@@ -172,7 +172,7 @@ dt_ESRP <- dt_full %>% filter(probe=="ESRP" )
 
 Plot data for siESRP1.
 
-```{r FigS7_B_top, echo = F}
+```{r FigS10_B_top, echo = F}
 spot_ESRP1_violin <- ggplot(dt_ESRP, aes(x = treatment, y =  Red))
 
 spot_ESRP1_violin + geom_violin(fill ="skyblue1") +
@@ -190,7 +190,7 @@ spot_ESRP1_violin + geom_violin(fill ="skyblue1") +
 
 Plot data for siESRP2.
 
-```{r FigS7_B_bottom, echo = F}
+```{r FigS10_B_bottom, echo = F}
 spot_ESRP2_violin <- ggplot(dt_ESRP, aes(x = treatment, y =  Far_Red))
 
 spot_ESRP2_violin + geom_violin(fill = "skyblue3") +geom_boxplot(width=0.1, color="black", fill ="white", outlier.shape = NA)+
@@ -207,7 +207,7 @@ spot_ESRP2_violin + geom_violin(fill = "skyblue3") +geom_boxplot(width=0.1, colo
 
 Plot data for siESRP1 + siESRP2.
 
-```{r FigS7_C, fig.length = 14, fig.width = 7, echo=F}
+```{r FigS10_C, fig.length = 14, fig.width = 7, echo=F}
 spot_ESRP1_ESRP2 <- ggplot(dt_ESRP, aes(x = Far_Red, y =  Red))
 
 spot_ESRP1_ESRP2 + geom_point(size=0.8, shape=19)+geom_hex(bins=50)+
