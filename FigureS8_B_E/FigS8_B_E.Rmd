@@ -1,7 +1,7 @@
 ---
-title: "Figures S5B, S5C, S5D, and S5E"
+title: "Figures S8B, S8C, S8D, and S8E"
 author: "Asaf Shilo/Gianluca Pegoraro"
-date: "May 12th 2022"
+date: "August 31st 2022"
 output: github_document
 ---
 
@@ -176,7 +176,7 @@ dt_Full <- filter(dt_full, probe!='full')
 
 Plot Spot number for the 568 channel. 
 
-```{r FigS5_B, echo = F}
+```{r FigS8_B, echo = F}
 spot_562_boxplot <- ggplot(dt_Full, aes(x = probe, y = spot_562_n, fill = probe))
 
 spot_562_boxplot + geom_boxplot() + 
@@ -186,7 +186,7 @@ spot_562_boxplot + geom_boxplot() +
 
 Plot Spot number for the 640 channel. 
 
-```{r FigS5_C, echo = F}
+```{r FigS8_C, echo = F}
 spot_647_boxplot <- ggplot(dt_Full, aes(x = probe, y = spot_647_n, fill = probe))
 
 spot_647_boxplot + geom_boxplot() + 
@@ -202,12 +202,13 @@ dt_Full_Both <- filter(dt_Full, probe=='Both')
 
 Plot scatterplot for 640 vs. 568 number of spots only for samples labelled as "both".
 
-```{r FigS5_D, echo = F}
+```{r FigS8_D, echo = F}
 spot_FGFR2_split_2 <- ggplot(dt_Full_Both, aes(x = spot_647_n, y =  spot_562_n))
 
 spot_FGFR2_split_2 + geom_point(size=0.8, shape=19)+
   scale_fill_viridis(option = "plasma") + theme_bw()+geom_hex(bins=50)+
   geom_smooth(method = lm)+
+  stat_cor(method = "spearman",label.x=04, label.y=175, size = 5, face = "bold")+
   theme(aspect.ratio=1)+
   xlab("FGFR2-3' HCR Spot Number per Cell") +
                  ylab("FGFR2-5' HCR Spots Number per Cell")
@@ -216,7 +217,7 @@ spot_FGFR2_split_2 + geom_point(size=0.8, shape=19)+
 
 Plot scatterplot for 640 vs. 568 number of spots for all samples.
 
-```{r FigS5_E, echo = F}
+```{r FigS8_E, echo = F}
 spot_FGFR2_split <- ggplot(dt_Full, aes(x = spot_647_n, y =  spot_562_n, color = probe))
 
 spot_FGFR2_split + geom_point(size=0.8, shape=19)+
