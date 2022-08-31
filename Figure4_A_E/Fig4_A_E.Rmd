@@ -1,7 +1,7 @@
 ---
-title: "Figures 4A - 4C"
+title: "Figures 4A, 4B, 4C, 4E"
 author: "Asaf Shilo/Gianluca Pegoraro"
-date: "May 9th 2022"
+date: "August 31st 2022"
 output: github_document
 ---
 
@@ -228,6 +228,7 @@ spot_FGFR2_scatter <- ggplot(dt_MP_IIIbOE, aes(x = spot_n_647, y = spot_n_488))
 
 spot_FGFR2_scatter + geom_point() +
           geom_smooth(method = lm)+
+          stat_cor(method = "spearman",label.x=04, label.y=175, size = 5, face = "bold")+
             xlim(0,150)+
             ylim(0,200)+
             labs(x = "FGFR2-D7-10 HCR Spots per Cell ", y = "FGFR2-IIIb HCR Spots per Cell") +
