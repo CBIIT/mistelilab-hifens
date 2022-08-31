@@ -1,7 +1,7 @@
 ---
 title: "Figures 3A, 3B, 3C, and 3E"
 author: "Asaf Shilo/Gianluca Pegoraro"
-date: "Aug 18th 2022"
+date: "Aug 31st 2022"
 output: github_document
 ---
 
@@ -17,6 +17,8 @@ library(stringr)
 library(ggthemes)
 library(ggpubr)
 library(curl)
+library(rstatix)
+library(FSA)
 ```
 
 Set output folder.
@@ -174,6 +176,62 @@ dt_All <- filter (dt_full, probe == 'All')
 dt_MP<- filter(dt_full, probe !='FGFR2')
 ```
 
+### Statistcal tests
+
+Kruskal-Wallis and Dunn test for FGFR2-Full
+
+```{r, fig.width=10,fig.height=8} 
+Full.kruskal <- dt_Full %>% kruskal_test(spot_n_488 ~ cell_line)
+Full.kruskal
+
+Full.kruskal_s <- dt_Full %>% kruskal_effsize(spot_n_488 ~ cell_line)
+
+# Pairwise comparisons using Dunn’s test:
+Full_pwc <- dt_Full %>% 
+  dunn_test(spot_n_488 ~ cell_line) 
+Full_pwc
+
+
+Full_pwc_p <- Full_pwc %>% add_xy_position(x = "cell_line")
+
+```
+
+Kruskal-Wallis and Dunn test for FGFR2-IIIb
+
+```{r, fig.width=10,fig.height=8} 
+IIIB.kruskal <- dt_IIIB %>% kruskal_test(spot_n_488 ~ cell_line)
+IIIB.kruskal
+
+IIIB.kruskal_s <- dt_IIIB %>% kruskal_effsize(spot_n_488 ~ cell_line)
+
+# Pairwise comparisons using Dunn’s test:
+IIIB_pwc <- dt_IIIB %>% 
+  dunn_test(spot_n_488 ~ cell_line) 
+IIIB_pwc
+
+
+IIIB_pwc_p <- IIIB_pwc %>% add_xy_position(x = "cell_line")
+
+```
+
+Kruskal-Wallis and Dunn test for PGK1
+
+```{r, fig.width=10,fig.height=8} 
+PGK1.kruskal <- dt_PGK1 %>% kruskal_test(spot_n_562 ~ cell_line)
+PGK1.kruskal
+
+PGK1.kruskal_s <- dt_PGK1 %>% kruskal_effsize(spot_n_562 ~ cell_line)
+
+# Pairwise comparisons using Dunn’s test:
+PGK1_pwc <- dt_PGK1 %>% 
+  dunn_test(spot_n_562 ~ cell_line) 
+PGK1_pwc
+
+
+PGK1_pwc_p <- PGK1_pwc %>% add_xy_position(x = "cell_line")
+
+```
+
 ### Plotting
 
 Plotting total FGFR2 in B1-FGFR2 System.
@@ -195,6 +253,26 @@ spot_B1Full_violin + geom_violin(fill = "red3") + geom_boxplot(outlier.shape = N
                 axis.text = element_text(size=20,color="black", face="bold"))
 ```
 
+Plotting total FGFR2 in B1-FGFR2 System with p-values
+
+```{r Fig3_A_2,fig.width=10,fig.height=8, echo=FALSE} 
+
+spot_B1Full_violin_pv <- ggplot(dt_Full, aes(x = cell_line, y = spot_n_488))
+
+
+spot_B1Full_violin_pv + geom_violin(fill = "red3") + geom_boxplot(outlier.shape = NA, width=0.03, color="black")+
+  stat_pvalue_manual(Full_pwc_p, hide.ns = TRUE) +
+            labs(y = "FGFR2-Full HCR Spots per cell")+
+                theme_classic()+
+                theme(
+                legend.position ="none",
+                plot.title = element_text(size = 12, hjust = 0.5, face = "bold"),
+                axis.title.x = element_blank(),
+                axis.text.x = element_text(angle = 45, hjust = 1),
+                axis.title = element_text(size = 10, color="black", face="bold"),
+                axis.text = element_text(size=10,color="black", face="bold"))
+```
+
 Plotting FGFR2-IIIb in B1-IIIB System
 
 ```{r Fig3_B,fig.width=10,fig.height=8, echo=FALSE}
@@ -213,6 +291,28 @@ spot_B1IIIb_violin + geom_violin(fill = "green4") + geom_boxplot(outlier.shape =
                 axis.text = element_text(size=20,color="black", face="bold"))
 ```
 
+Plotting FGFR2-IIIb in B1-IIIB System with p-values
+
+```{r Fig3_B_2,fig.width=10,fig.height=8}
+
+spot_B1IIIb_violin_pv <- ggplot(dt_IIIB, aes(x = cell_line, y = spot_n_488 ))
+
+spot_B1IIIb_violin_pv + geom_violin(fill = "green4") + geom_boxplot(outlier.shape = NA, width=0.03, color="black")+
+  
+            stat_pvalue_manual(IIIB_pwc_p, hide.ns = TRUE) +
+            labs(y = "FGFR2-IIIb HCR Spots per cell") +
+                theme_classic()+
+                theme(
+                legend.position ="none",
+                plot.title = element_text(size = 24, hjust = 0.5, face = "bold"),
+                axis.title.x = element_blank(),
+                axis.text.x = element_text(angle = 45, hjust = 1),
+                axis.title = element_text(size = 20, color="black", face="bold"),
+                axis.text = element_text(size=20,color="black", face="bold"))
+```
+
+
+
 Plotting PGK1 in B2-PGK1 System.
 
 ```{r Fig3_C,fig.width=10,fig.height=8, echo=FALSE}
@@ -230,6 +330,27 @@ spot_B2PGK1_violin + geom_violin(fill = "grey70") + geom_boxplot(outlier.shape =
                 axis.title = element_text(size = 20, color="black", face="bold"),
                 axis.text = element_text(size=20,color="black", face="bold"))
 ```
+
+Plotting PGK1 in B2-PGK1 System with p-values
+
+```{r Fig3_C_2,fig.width=10,fig.height=8, echo=FALSE}
+
+spot_B2PGK1_violin_pv <- ggplot(dt_PGK1, aes(x = cell_line, y = spot_n_562))
+
+spot_B2PGK1_violin_pv + geom_violin(fill = "grey70") + geom_boxplot(outlier.shape = NA, width=0.03, color="black")+
+            stat_pvalue_manual(PGK1_pwc_p, hide.ns = TRUE) +
+            labs(y = "PGK1 HCR Spots per cell") +
+                theme_classic()+
+                theme(
+                legend.position ="none",
+                plot.title = element_text(size = 24, hjust = 0.5, face = "bold"),
+                axis.title.x = element_blank(),
+                axis.text.x = element_text(angle = 45, hjust = 1),
+                axis.title = element_text(size = 20, color="black", face="bold"),
+                axis.text = element_text(size=20,color="black", face="bold"))
+```
+
+
 
 Document the information about the analysis session. 
 
