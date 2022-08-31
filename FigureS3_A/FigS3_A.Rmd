@@ -1,7 +1,7 @@
 ---
-title: "Figure S2A"
+title: "Figure S3A"
 author: "Asaf Shilo/Gianluca Pegoraro"
-date: "May 12th 2022"
+date: "August 31st 2022"
 output: github_document
 ---
 
@@ -175,7 +175,7 @@ dt_all <- rbind(dt_3, dt_3.1)
 
 Plotting FGFRII-IIIB data from T-47D cells.
 
-```{r FigS2_A, echo = F}
+```{r FigS3_A, echo = F}
 spot_n_boxplot <- ggplot(dt_all, aes(x = probe, y = spot_N))
 
 spot_n_boxplot + geom_violin(fill = "green4") + geom_boxplot(width=0.075, color="black", fill ="white", outlier.shape = NA)+
