@@ -1,10 +1,10 @@
 # mistelilab-hifens
 
-This is a repo containing the R code used to generate some of the figures for a pre-print manuscript from the Misteli Lab at the National Cancer Institute/NIH.
+This is a repo containing the R code used to generate some of the figures for a 2022 Nucleic Acid Research publication from the Misteli Lab at the National Cancer Institute/NIH.
 
--   [HiFENS: High-throughput FISH detection of endogenous pre-mRNA splicing isoforms](https://www.biorxiv.org/content/10.1101/2022.04.10.487792v1)
+-   [HiFENS: High-throughput FISH detection of endogenous pre-mRNA splicing isoforms](https://doi.org/10.1093/nar/gkac869)
 -   Authors: Shilo, Asaf; Pegoraro, Gianluca; Misteli, Tom.
--   DOI: 10.1101/2022.04.10.487792
+-   DOI: 10.1093/nar/gkac869
 
 Once the repo is cloned, and to recreate locally the `renv` library used in the analysis, run the `renv::restore()` command at the R console *before* running any of the `.Rmd` scripts. This operation needs to be performed only once on each computer the analysis is run on.
 
